@@ -1,0 +1,38 @@
+This file reflect the current gnokii maintainance status. If you have
+patches for gnokii it would be wise to discuss them with maintainer of the
+certain area on the gnokii-ml.
+
+gnokii part		maintainer
+=============================================================================
+gnokii			Pawel Kot
+gnokiid			BORBELY Zoltan (no longer developed)
+xgnokii			Jan Derfinak (mostly in keep-alive mode)
+smsd			Jan Derfinak
+libgnokii		Pawel Kot, Daniele Forsi
+statemachine		BORBELY Zoltan, Pawel Kot (no changes for a long time, but works just fine)
+libsms			Pawel Kot
+bitmaps			Pawel Kot (no changes)
+ringtones		Pawel Kot (no changes)
+2110 driver		no longer maintained
+3110 driver		no longer maintained
+6110 driver		BORBELY Zoltan, Daniele Forsi, Pawel Kot (keep-alive mode)
+6210 driver		BORBELY Zoltan, Daniele Forsi, Pawel Kot (keep-alive mode)
+6510 driver		BORBELY Zoltan, Daniele Forsi, Pawel Kot
+AT driver		BORBELY Zoltan, Daniele Forsi, Pawel Kot
+gnapplet driver		BORBELY Zoltan
+link layer		BORBELY Zoltan, Pawel Kot (no changes)
+device layer		BORBELY Zoltan, Pawel Kot (no changes)
+documentation		Pawel Kot, Daniele Forsi
+autoconf		Pawel Kot, BORBELY Zoltan
+Windows port		Jari Turkia
+dku2 kernel driver	no longer maintained, replaced by dku2libusb driver
+
+maintainer		e-mail address
+=============================================================================
+BORBELY Zoltan		bozo (at) andrews (dot) hu
+Chris Kemp		chris (at) madpanda (dot) uk
+Jan Derfinak		ja (at) mail (dot) upjs (dot) sk
+Pawel Kot		gnokii (at) gmail (dot) com
+Jari Turkia		jmjt (at) lut (dot) fi
+Daniele Forsi		daniele (at) forsi (dot) it
+gnokii-ml		gnokii-users (at) nongnu (dot) org

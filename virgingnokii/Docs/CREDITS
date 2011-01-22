@@ -1,0 +1,208 @@
+- Credits -
+
+Thank you to, in no particular order...
+
+*  Everyone on the gnokii mailing list for their interest
+   and input into the project.
+
+*  Pavel Janík ml. for the majority of work on gnokii 6110 series
+   support, spelling corrections and miscellaneous code cleanups.
+
+*  Serge Odinokov for 6110 series authentication protocol and
+   example Delphi RLP code. Many thanks...
+
+*  Nick Lamb for operator logos, CLI uploading and AT*C command support.
+
+*  Francois Dessart, Brendan O'Dea, Tony Lindstrom, Steffan Henke
+   and Cobus Van Eeden for dumps (and in some cases interpretation!)
+   of unknown messages, bug reports and prompt feedback of being
+   able to build new releases.
+
+*  Staffan Ulfberg for taking care of the website and for instigating
+   the 6110 project which has now been merged with the gnokii effort.
+
+*  Martin Hamilton for looking after the mailing list.
+
+*  Tim Potter for some of the ideas that are now incorporated in gnokii
+   to provide multiple model support and config file code.
+
+*  Paul Mackerras and Andrew Tridgell for discussions about pseudo
+   ttys, setuid programs and such.  Tridge kindly reviewed the
+   mgnokiidev.c code.
+
+*  Richard Kalton for his excellent page about Nokia 6110 protocol.
+
+*  Colin Paton for his mail with subject "Dumps of phone<>PC traffic".
+   It helped a lot.
+
+*  Juan Altmayer Pizzorno for his help with MBUS/FBUS and other
+   debugging.
+
+*  Gary Reuter for his help when looking for a bug in phone numbers,
+   for the set-time function debugging.
+
+*  Jiri Meloun for voice calling.
+
+*  Emilio Brambilla for SMS notification fixes, setdatetime implementation
+   and typing GSM_Default_Alphabet.
+
+*  Paweł Kot for EnterPIN on 6110 Series changes and other things.
+
+*  Konstantinos Agouros for gnokii-perl module.
+
+*  Czech Linux Users' group for it's CVS server which hosted our
+   development repository.
+
+*  Goran Dokic, Samuli Sorvakko and anonymous for gettext files for
+   Dutch, Finnish and German translations.
+   
+*  Marcel Holtmann for RLP FCS code, the IrDA and Bluetooth code,
+   the Nokia Phonet link layer and other misc stuff.
+
+*  Chris Kemp for logo stuff and a big part of the RLP code.
+  
+*  Andrew Kozin for the model 640 support (NMT 450 network).
+ 
+*  Karel Zak for his enthusiasm (and patches) for the autoconf stuff.
+  
+*  Harri Yli-Torkko for investigative work & code on the 3810/8110 and
+   protocol updates for Nokia 3330.
+
+*  Stano Meduna for misc code and build process work.
+  
+*  Alfred Nurnberger for some information on the 5160/6160 MBUS
+   protocol.  
+   
+*  Alessandro Zummo for reset and getopts code.
+
+*  Manfred Jonsson for his manufacturer and windows patch, and AT command
+   support.
+
+*  Mark Looi for Cell Broadcast code - based on protocol decoded by
+   Colin Paton.
+
+*  Sebastian Zagrodzki and Jacek Fiok for Polish .po file.
+
+*  Marcin Wiącek for all his work and tons of patches.
+
+*  Gabriele Zappi for testing, general help and bug fixes.
+
+*  Erik Rossen for help with documentation and debian packaging support.
+
+*  Marian Jancar for patches on 7110 series.
+
+*  Tamar Bondar for updates on SMS handling on 3810 series.
+
+*  Marek Rogoziński for help in tracing some nasty bugs.
+
+*  Pavel Machek for developing 2110 and Duncall support and many clever
+   hints.
+
+*  Boštjan Müller for Slovenian translation and other things.
+
+*  Hans Motshärg for Estonian translation and useful bugreports.
+
+*  Marcin Pławiński for preview logos.
+
+*  Martin Lucina for any kind of help he is providing ;-)
+
+*  Gabriele Stella for Italian translation.
+
+*  Andrea Scopece for bug reports and other help.
+ 
+*  Panagiotis Astithas, Daniel O'Connor, Sheldon Hearn for help with FreeBSD.
+
+*  Artur Kubiak for help with Solaris.
+
+*  Markus Plail for work on 7110 support and interesting irc chats.
+
+*  Simon Huggins for help with 6210 and IrDA.
+
+*  Jan Kratochvil for various patches.
+
+*  BORBELY Zoltan for patches for 6100 series for the new structure, many
+   useful hints and discussions and real help in approaching 0.4.0 release and
+   instant help for gnokii development and of course for gnapplet.
+
+*  Przemek Świderski for sample hscsd chat script.
+
+*  Balazs Nagy for help in assembling protocol documentation.
+
+*  Hannes Schulz for SMS fixes in AT series.
+
+*  Guillaume Laurčs and Antti Peltonen for the instant bug reports on irc ;-)
+
+*  Marek Michałkiewicz for a few hints, patches and reports.
+
+*  Petr Cech for SMS center support in AT series.
+
+*  Len Trigg for a few hints, patches and reports.
+
+*  Vidar Madsen for ppm2nokia script and nice operator logos :-)
+
+*  Mariusz Mazur for his work on the build system (NLS support and few other
+   things).
+
+*  Ruotger Skupin for work on MacOS X port.
+
+*  Bertrik Sikken, Ulrich Hopp, P. Christeas for any help, smart ideas, bug
+   reports and bug fixes they provided.
+
+*  Ladislav Michl for his help and maintainship of CBUS, Duncall and Bosch
+   drivers. And other things, like nice irc chats, too :-)
+
+*  Paulius Bulotas for finding not portable parts of gnokii.
+
+*  Siegfried Schloissnig for Mac OSX bluetooth code.
+
+*  Olivier Kaloudoff for his fixes and valuable efforts and French translation
+   Without him Mac OSX bluetooth support wouldn't have been integrated.
+
+*  Torsten Kunkelfor usage reports and catching our bugs.
+
+*  Krzysztof Koziarek for help in parsing www.gsmworld.com pages to get the
+   list of country and operator codes and names.
+
+*  Ron Yorston for a bunch of the paches and interesting discussions on
+   gnokii-ml.
+
+*  Reiner Steib for useful patches, bug reports and other hints.
+
+*  Daniel Koć for Polish translation.
+
+*  Phil Ashby for Windows IrDA support.
+
+*  Helge Deller for forcing Paweł to do the right things.
+
+*  Hugo Hass for work on AT driver.
+
+*  Martin Goldhahn for work on vCalendar support and other pieces of code.
+
+*  Bastien Nocera for changes to the cfgreader, various other patches and
+   work on integrating libgnokii with gnome-phone-manager.
+
+*  Alex Kanavin for OBEX USB DKU2 support and patient help for Paweł while
+   porting it to gnokii.
+
+*  Daniele Forsi for active gnokii development.
+
+*  Petr Hruska for his contribution to AT driver.
+
+*  Jari Turkia for trying to keep win32 port alive (with success!).
+
+*  Daniel Gollub for various patches, fixes and hints and integrating gnokii
+   with opensync (http://opensync.org/).
+
+*  Matthias Jahn for keeping Debian and Ubuntu gnokii repository up to date.
+
+*  Everyone chatting with us on IRC #gnokii at freenode.net.
+
+*  Lucy for making pizza and putting up with Hugh disappearing to
+   work on this.  Rachael for new parent induced insomnia...
+
+*  Last not least: Mirka for allowing Pavel to work on gnokii
+   and for _great_ gnokii operator logos...
+
+We tried to mentioned everyone who contributed to gnokii project but we
+might to forgot someone. If anyone does feel that we missed him and his
+name should be mentioned here do not hesitate to contact us :-)

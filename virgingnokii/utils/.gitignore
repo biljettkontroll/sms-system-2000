@@ -1,0 +1,8 @@
+.libs
+mgnokiidev
+*.lo
+Makefile
+Makefile.in
+.deps
+gnapplet.sis
+*.o

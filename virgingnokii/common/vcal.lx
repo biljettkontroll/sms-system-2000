@@ -1,0 +1,364 @@
+/*
+
+  $Id$
+
+  G N O K I I
+
+  A Linux/Unix toolset and driver for Nokia mobile phones.
+
+  This file is part of gnokii.
+
+  Gnokii is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  Gnokii is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with gnokii; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+  Copyright (C) 1999-2000  Hugh Blemings & Pavel Janik ml.
+
+*/
+
+%{
+#include "config.h"
+
+#include <string.h>
+
+#include "config.h"
+#include "compat.h"
+#include "misc.h"
+#include "gnokii.h"
+#include "gsm-filetypes.h"
+
+#define YY_DECL int yylex(char *type, char *text, char *meeting_location, char *desc, char *time, char *endtime, char *alarm, char *todo_priority, int lexnumber)
+int veventcounter = 0, vtodocounter = 0, alarmtone = 0;
+
+%}
+
+%x vcalendar
+%x vevent
+%x vtodo
+%x category
+%x summary
+%x todosummary
+%x description
+%x ttime
+%x etime
+%x aalarm
+%x loc
+%x tpriority
+%option noyywrap
+%option nounput
+
+%%
+
+BEGIN:VCALENDAR				BEGIN(vcalendar);
+
+<vcalendar>BEGIN:VEVENT			++veventcounter; BEGIN(vevent);
+
+<vcalendar>BEGIN:VTODO			++vtodocounter; BEGIN(vtodo);
+
+<vtodo>SUMMARY[ \t\n\r]*:		BEGIN(todosummary);
+
+<todosummary>[[:print:]]+		{
+						if (vtodocounter == lexnumber)
+							snprintf(text, 256, "%s", yytext);
+						BEGIN(vtodo);
+					}
+
+<vtodo>PRIORITY[ \t\n\r]*:		BEGIN(tpriority);
+
+<tpriority>[0-9]{1}			{
+						if (vtodocounter == lexnumber)
+							snprintf(todo_priority, 1, "%s", yytext);
+						BEGIN(vtodo);
+					}
+
+<vevent>CATEGORIES[ \t\n\r]*:		BEGIN(category);
+
+<category>[[:print:]]+			{
+						if (veventcounter == lexnumber)
+							snprintf(type, 21, "%s", yytext);
+						BEGIN(vevent);
+					}
+
+<vevent>SUMMARY[ \t\n\r]*:		BEGIN(summary);
+
+<summary>[[:print:]]+			{
+						if (veventcounter == lexnumber)
+							snprintf(text, 256, "%s", yytext);
+						BEGIN(vevent);
+					}
+
+<vevent>DESCRIPTION[ \t\n\r]*:		BEGIN(description);
+
+<description>[[:print:]]+		{
+						if (veventcounter == lexnumber)
+							snprintf(desc, 256, "%s", yytext);
+						BEGIN(vevent);
+					}
+
+<vevent>DTSTART[ \t\n\r]*:		BEGIN(ttime);
+
+<ttime>[0-9]{8}[tT][0-9]{6}		{
+						if (veventcounter == lexnumber)
+							snprintf(time, 16, "%s", yytext);
+						BEGIN(vevent);
+					}
+
+<vevent>DTEND[ \t\n\r]*:		BEGIN(etime);
+
+<etime>[0-9]{8}[tT][0-9]{6}		{
+						if (veventcounter == lexnumber)
+							snprintf(endtime, 16, "%s", yytext);
+						BEGIN(vevent);
+					}
+
+<vevent>AALARM[ \t\n\r]*:		{
+						BEGIN(aalarm);
+						dprintf("Alarm tone enabled\n");
+						alarmtone = 1;
+					}
+
+<vevent>DALARM[ \t\n\r]*:		{
+						BEGIN(aalarm);
+						dprintf("Alarm tone disabled\n");
+						alarmtone = 0;
+					}
+
+<aalarm>[0-9]{8}[tT][0-9]{6}		{
+						if (veventcounter == lexnumber)
+							strncpy(alarm, yytext, 16);
+						BEGIN(vevent);
+					}
+
+
+<vevent>LOCATION[ \t\n\r]*:		BEGIN(loc);
+
+<loc>[[:print:]]+			{
+						if (veventcounter == lexnumber)
+							snprintf(meeting_location, 64, "%s", yytext);
+						BEGIN(vevent);
+					}
+
+<vevent>END:VEVENT			BEGIN(vcalendar);
+
+<vcalendar>END:VCALENDAR		BEGIN(0);
+<*>.|\n
+<*><<EOF>>				{
+	                                        if (((lexnumber > 0) && (lexnumber < veventcounter + 1)) ||
+						    ((lexnumber > 0) && (lexnumber < vtodocounter + 1)))
+						{
+							return 0;
+						}
+						fprintf(stderr, _("Error: Invalid calendar note number!\n"));
+						return -1;
+					}
+
+%%
+
+/**
+* vcal_time_get
+*
+* Fills vCalendar time string into gn_timestamp structure
+*
+* in:
+*   dt:  datetime structure
+*   time:  string in format yyyymmddThhmmss
+* out:
+*   <>0 if error
+*/
+int vcal_time_get(gn_timestamp *dt, char *time)
+{
+	char year[5] = "", month[3] = "", day[3] = "", hour[3] = "", minute[3] = "", second[3] = "";
+	dt->year = dt->month = dt->day = dt->hour = dt->minute = dt->second = dt->timezone = 0;
+
+	snprintf(year, 5, "%s", time);
+	snprintf(month, 3, "%s", time + 4);
+	snprintf(day, 3, "%s", time + 6);
+	snprintf(hour, 3, "%s", time + 9);
+	snprintf(minute, 3, "%s", time + 11);
+	snprintf(second, 3, "%s", time + 13);
+
+	dprintf("\t%s-%s-%s %s:%s:%s\n", year, month, day, hour, minute, second);
+
+	/* FIXME: Should check ranges... */
+	dt->year = atoi(year);
+	dt->month = atoi(month);
+	dt->day = atoi(day);
+	dt->hour = atoi(hour);
+	dt->minute = atoi(minute);
+	dt->second = atoi(second);
+	/* FIXME */
+	dt->timezone = 0;
+
+	return 0;
+}
+
+/**
+* gn_calnote_fill
+*
+* Fills calendar data from strings into calendar note
+*
+* in:
+*   note:  calendar note structure
+*   type:  type of calendar note
+*   text:  text or phonenumber
+*   time:  string in format yyyymmddThhmmss
+*   alarm: dito
+* out:
+*   <>0 if error
+*/
+static int gn_calnote_fill(gn_calnote *note, char *type, char *text, char *meeting_location,
+		    char *desc, char *time, char *endtime, char *alarm)
+{
+	dprintf("Start time (YYYY-MM-DD HH:MM:SS):\n");
+	vcal_time_get(&note->time, time);
+	dprintf("End time (YYYY-MM-DD HH:MM:SS):\n");
+	vcal_time_get(&note->end_time, endtime);
+	dprintf("Alarm time (YYYY-MM-DD HH:MM:SS):\n");
+	vcal_time_get(&note->alarm.timestamp, alarm);
+	if (note->alarm.timestamp.year) {
+		note->alarm.enabled = 1;
+		note->alarm.tone = alarmtone;
+	}
+
+	snprintf(note->text, 256, "%s", text);
+	note->phone_number[0] = 0;
+	dprintf("Text: %s\n", note->text);
+
+	/* FIXME: Handle additional strings, maybe from configuration file */
+	if (!strcmp(type, "PHONE CALL")) {
+		snprintf(note->phone_number, 48, "%s", text);
+		dprintf("Phone: %s\n", note->phone_number);
+		if (desc[0] != 0) {
+			snprintf(note->text, 256, "%s", desc);
+			dprintf("Desc: %s\n", note->text);
+		}
+		note->type = GN_CALNOTE_CALL;
+	} else if (!strcmp(type, "MEETING")) {
+		note->type = GN_CALNOTE_MEETING;
+		if (meeting_location[0] != 0) {
+			snprintf(note->mlocation, 64, "%s", meeting_location);
+			dprintf("Location: %s\n", note->mlocation);
+		}
+	} else if (!strcmp(type, "SPECIAL OCCASION"))
+		note->type = GN_CALNOTE_BIRTHDAY;
+	else if (!strcmp(type, "REMINDER"))
+		note->type = GN_CALNOTE_REMINDER;
+	else
+		note->type = GN_CALNOTE_MEMO;
+
+	return 0;
+}
+
+/**
+* gn_vcal_file_event_read
+*
+* Reads vCalendar file and parses VEVENT entries
+*
+* in:
+*   FileName: name of vCalendar file
+*   cnote:  pointer to calendar note
+*   number:  number in file of calendar note to read
+* out:
+*   <>0 if error
+*/
+int gn_vcal_file_event_read(char *filename, gn_calnote *cnote, int number)
+{
+	FILE *file;
+	char type[21] = "", text[257] = "", desc[257] = "", meeting_location[64] = "";
+	char time[16] = "", endtime[16] = "", alarm[16] = "";
+	char todo_priority[2] = "";
+
+	/* translators: %s are replaced by function names */
+	fprintf(stderr, _("Function %s() is deprecated. Use %s() instead.\n"), __FUNCTION__, "gn_ical2calnote");
+	file = fopen(filename, "r");
+	if (!file) {
+		fprintf(stderr, _("Can't open file %s for reading!\n"), filename);
+		return -1;
+	}
+
+	yyin = file;
+
+	memset(cnote, 0, sizeof(gn_calnote));
+
+	if (yylex(type, text, meeting_location, desc, time, endtime, alarm, todo_priority, number)) {
+		fprintf(stderr, _("Error parsing vCalendar file!\n"));
+		fclose(file);
+		return -1;
+	}
+	gn_calnote_fill(cnote, type, text, meeting_location, desc, time, endtime, alarm);
+
+	fclose(file);
+	return 0;
+}
+
+/**
+* gn_todo_fill
+*
+* Fills todo data from strings into ToDo
+*
+* in:
+*   note:  todo structure
+*   text:  text or phonenumber
+*   priority:  GN_TODO_HIGH (highest), GN_TODO_MEDIUM, GN_TODO_LOW (lowest)
+* out:
+*   <>0 if error
+*/
+static int gn_todo_fill(gn_todo *todonote, char *text, char *todo_priority)
+{
+	snprintf(todonote->text, GN_TODO_MAX_LENGTH, "%s", text);
+	todonote->priority = GN_TODO_MEDIUM;
+	if (todo_priority) todonote->priority = atoi(todo_priority);
+	return 0;
+}
+
+/**
+* gn_vcal_file_todo_read
+*
+* Reads vCalendar file and parses VTODO entries
+*
+* in:
+*   FileName: name of vCalendar file
+*   ctodo:  pointer to calendar note
+*   number:  number in file of calendar note to read
+* out:
+*   <>0 if error
+*/
+int gn_vcal_file_todo_read(char *filename, gn_todo *ctodo, int number)
+{
+	FILE *file;
+	char type[21] = "", text[258] = "", desc[258] = "";
+	char time[16] = "", endtime[16] = "", alarm[16] = "";
+	char todo_priority[3] = "", meeting_location[64] = "";
+
+	/* translators: %s are replaced by function names */
+	fprintf(stderr, _("Function %s() is deprecated. Use %s() instead.\n"), __FUNCTION__, "gn_ical2todo");
+	file = fopen(filename, "r");
+	if (!file) {
+		fprintf(stderr, _("Can't open file %s for reading!\n"), filename);
+		return -1;
+	}
+
+	yyin = file;
+
+	memset(ctodo, 0, sizeof(gn_todo));
+
+	if (yylex(type, text, meeting_location, desc, time, endtime, alarm, todo_priority, number)) {
+		fprintf(stderr, _("Error parsing vCalendar file!\n"));
+		fclose(file);
+		return -1;
+	}
+	gn_todo_fill(ctodo, text, todo_priority);
+
+	fclose(file);
+	return 0;
+}

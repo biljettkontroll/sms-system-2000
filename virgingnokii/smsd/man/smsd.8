@@ -1,0 +1,313 @@
+.TH "smsd" "8" "September 27, 2010" "" "Gnokii"
+.SH "NAME"
+smsd \- daemon for handling incoming and outgoing SMSes using libgnokii
+.SH "SYNOPSIS"
+.B smsd \fI[OPTIONS]\fR
+
+.SH "DESCRIPTION"
+.PP 
+The
+.B SMSD
+(SMS daemon) program is intended for receiving and sending SMSes.
+
+.PP
+The program is designed to use modules (plugins) to work with different backends.
+Currently are supported PostgreSQL, MySQL and a special module 'file' which is
+designed to work without an SQL database (see below for special instructions
+in the file module section). When \fBSMSD\fR uses an SQL server as a
+repository for SMSes you must create a database (default name is 'sms') with
+tables defined in sms.tables.{module}.sql files.
+
+Table 'inbox' is for received SMSes. \fBSMSD\fR periodically checks a given
+phone memory to move messages to this table.
+Only received SMSes and status reports are deleted from the phone, other kinds
+of messages are not removed.
+
+.PP
+Table 'inbox' has the following fields:
+
+.RS
+.TP
+.B number
+phone number from which is sms received
+.TP
+.B smsdate
+date set by SMS center
+.TP
+.B insertdate
+date SMS was inserted into table
+.TP
+.B text
+SMS text
+.TP
+.B phone
+number of phone to use. If you use smsd without -t option you can ignore
+this column. See -t option below.
+.TP
+.B processed
+smsd sets this always to FALSE. You can use it for another program which will parse SMSes.
+.RE
+
+.PP
+Table 'outbox' is for outgoing SMSes. \fBSMSD\fR periodically looks into this table
+and searches for lines with attribute 'processed' set to FALSE. If it finds
+such SMS, it will send SMS to 'number'.
+
+.PP
+Table 'outbox' has the following fields:
+
+.RS
+.TP
+.B number
+recipient's phone number
+
+.TP
+.B processed_date
+date of processing SMS.
+
+.TP
+.B insertdate
+date of inserting SMS in table
+
+.TP
+.B text
+SMS text
+
+.TP
+.B phone
+number of phone to use. If you use smsd without -t option you
+must not fill this column. See -t option below.
+
+.TP
+.B processed
+new SMS must have this attribute set to FALSE. \fBSMSD\fR will send this SMS and will update 'processed' to TRUE.
+
+.TP
+.B error
+This attribute contains return value of gn_sms_send() function. For explanation of numeric values see <gnokii/error.h> in gnokii source.
+
+.TP
+.B dreport
+request for delivery report per message. Possible values are 0 for no delivery report, 1 for delivery report.
+
+.TP
+.B not_before
+sms will not be sent before this time (default 00:00:00).
+
+.TP
+.B not_after
+sms will not be sent after this time (default 23:59:59).
+.RE
+.PP
+\fBSMSD\fR is multi threaded program. If you list processes you will see more than
+one instance of smsd.
+
+.SS
+THE FILE MODULE
+.PP
+This module doesn't need an SQL server to work. For incoming messages it
+works in a way that it calls a program giving phone number, date as parameter
+and the message text on stdin. In the smsd directory there is an example file
+action. It shows sms data to stdout. If you want something useful you must
+write your own action.
+.BR
+For outgoing messages you can set spool directory where smsd looks
+regularly.
+
+.PP
+Incoming sms are passed in format
+.RS
+.PD 0
+.TP
+.BR action\ number\ date\ <\ sms
+.PD
+.RE
+
+.PP
+Outgoing sms must be in format:
+.RS
+.PD 0
+.TP
+.B number
+.TP
+.B text
+.PD
+.RE
+
+.PP
+The name of file is unimportant but smsd ignores all files with prefix
+"ERR.". If smsd succesfully sends sms, it removes file from spool directory.
+If smsd cannot send sms prepends file with "ERR." prefix and ignores it.
+If you use \fI-m file\fR, \fI-u\fR (\fI--user\fR) and \fI-c\fR (\fI--host\fR) will have other meaning.
+\fI-u\fR is for action (action must be executable)
+\fI-c\fR is for spool directory where smsd looks for smses. Smsd must have read
+and write permissions to this directory.
+
+.PP
+\fI-p\fR, \fI-d\fR parameters have no meaning when \fI-m file\fR is used.
+
+.PP
+If you don't specify \fI-u\fR, default action is to print sms to stdout.
+If you don't specify \fI-c\fR, sms sending will be disabled.
+
+.SS OPTIONS
+.PP
+Available options:
+.TP
+.BR -u,\ --user\ db_username
+Specify user name.
+
+.TP
+.BR -p,\ --password\ db_password
+Specify user password.
+
+.TP
+.BR -d,\ --db\ db_name
+Specify database name for 'pq' and 'mysql' modules or full path to database file for 'sqlite' module (defaults to 'sms').
+
+.TP
+.BR -c,\ --host\ db_hostname
+Specify database server host name.
+
+.TP
+.BR -s,\ --schema\ db_hostname
+Specify database schema used by the PostgreSQL module (defaults to 'public').
+
+.TP
+.BR -m,\ --module\ db_module
+Specify which module to use for connection to DB server. Currently supported values are 'pq' for PostgreSQL, 'mysql' for MySQL, 'sqlite' for SQLite3 and 'file'. File module is not supported in Windows.
+
+.TP
+.BR -l,\ --libdir\ path_to_db_module
+Specify path to DB modules. If you specify pq module, smsd searches in libdir for file libsmsd_pq.so (for mysql - libsmsd_mysql.so).
+Do not interchange these plugins with default SQL libraries from database distribution!
+
+.TP
+.BR -f,\ --logfile\ file
+If used, smsd will monitor sms traffic to file "file". File is
+reopened and closed for every message so you can simply rename or
+delete it if you want to rotate logs. If you use '-' as filename smsd
+will use standard output.
+
+.TP
+.BR -t,\ --phone\ phone_number
+You can run more instances of smsd. One instance per phone. In this
+setup you must configure phone section in the config file. For example:
+
+.PD 0
+.RS
+[global]
+.P
+port = /dev/ttyS0
+.P
+model = 6110
+.P
+initlength = default
+.P
+connection = serial
+.P
+bindir = /usr/local/sbin/
+.P
+use_locking = no
+.P
+serial_baudrate = 38400
+.P
+smsc_timeout = 10
+.P
+
+[phone_1]
+.P
+port = /dev/ttyS0
+.P
+model = 6110
+.P
+initlength = default
+.P
+connection = serial
+.P
+bindir = /usr/local/sbin/
+.P
+use_locking = no
+.P
+serial_baudrate = 38400
+.P
+
+[phone_2]
+.P
+port = /dev/ttyS1
+.P
+model = AT
+.P
+initlength = default
+.P
+connection = serial
+.P
+bindir = /usr/local/sbin/
+.P
+use_locking = no
+.P
+serial_baudrate = 38400
+.P
+smsc_timeout = 10
+.PD
+
+In this setup if you run smsd without -t option it will use config
+from global section. If you run smsd with -t 1 it will use config
+from phone_1 and likewise with -t 2 uses phone_2. In case of use -t
+option smsd fills phone number for incoming sms's and in outbox it
+looks only for sms's with the specified phone number in column
+\&'phone'. This behaviour gives you possibility to run one instance
+of smsd for every phone you have at the same time.
+.RE
+
+.TP
+.BR -i,\ --interval\ interval
+Polling interval for incoming sms's in seconds. Default is 1 second.
+
+.TP
+.BR -S,\ --maxsms\ number
+When phone driver doesn't support sms status it is possible to specify
+number of sms's supported by phone. Default is 10. If driver support
+sms status this option is ignored.
+
+.TP
+.BR -b,\ --inbox\ memory_type
+Where to look for new messages (defaults to IN for most Nokia phones and to
+SM for all other phones).
+For debugging or for unusual setups you can use another memory type
+supported by your phone (eg. IN for the Inbox, OU for the Outbox, AR for the
+Archive, TE for the Templates and F1,...,F20 for your own folders).
+Use gnokii --showsmsfolderstatus for a list of such memory types.
+
+.TP
+.BR -0,\ --firstpos0
+SMSD starts messages reading from position 1. If your phone stores sms's 
+from postion 0, use this option.
+
+.TP
+.BR -v,\ --version
+Shows smsd version.
+
+.TP
+.BR -h,\ --help
+Shows short help.
+
+.SH "DIAGNOSTICS"
+Various error messages are printed to STDERR.
+
+Debug output can be enabled setting xdebug=on (for messages specific to \fBSMSD\fR)
+and debug=on (for messages specific to \fBlibgnokii\fR) in the configuration file.
+
+.SH "BUGS"
+.PP 
+None reported.
+
+.SH "AUTHOR"
+\fBSMSD\fR was written by Jan Derfinak and contributed by other people.
+See also Docs/CREDITS from the Gnokii sources.
+
+.SH "COPYING"
+This program is distributed under the GNU Public License.
+
+.SH "SEE ALSO"
+gnokii(1)

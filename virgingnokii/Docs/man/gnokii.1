@@ -1,0 +1,733 @@
+.TH "gnokii" "1" "Jul 11, 2010" "Dag Wieers, Pawel Kot" "gnokii"
+.SH "NAME"
+gnokii \- modem/fax driver for the mobile phones
+.SH "SYNOPSIS"
+.B gnokii
+\fI[CONFIG OPTIONS]\fR [\fIOPTIONS\fR]
+.SH "DESCRIPTION"
+.PP 
+.B gnokii
+is a multiple systems tool suite and (eventually) modem/fax driver for the mobile phones.
+.PP 
+.B gnokii 
+at the beginning was designed to support the proprietary protocols of Nokia phones and at the moment it also supports phones and GSM modems that understand AT commands, both from Nokia and from other vendors, and SIM cards in PC/SC compatible Smart Card readers.
+Limited support for the older and slow Nokia MBUS protocol is also available.
+.PP
+You can assume that your phone is supported, however there are rare cases
+that you will get very limited functionality with gnokii. If you have a
+fairly modern phone you should use the following model setting in your
+config file:
+ - model = series40, if you have Nokia non-Symbian phone
+ - model = gnapplet, if you have Nokia Symbian Series60 prior to 3rd Edition phone
+ - model = AT, for all other
+ - if you have some older Nokia phone you may try using its brand name, eg. for Nokia 6210 use model = 6210.
+
+See also our <http://wiki.gnokii.org/index.php/Config> for configurations known to work.
+
+Symbian series60 3rd edition (most Nokia n and e series) are not
+supported by gnapplet driver due to changes in Symbian API. For now you
+can get some functionality using AT driver.
+
+Please note that currently there are Nokia models with almost the same names
+as the old ones, like 6110c vs 6110 or 3110c vs 3110. They are completly
+incompatible. DO NOT use \fImodel = 6110\fP or \fImodel = 3110\fP setting for them.
+
+.SH "CONFIG OPTIONS"
+.TP 
+.BR "\-\-config \fIfilename\fP"
+reads configuration from \fIfilename\fR instead of trying default locations.
+Normally gnokii looks for config file in
+\fI$XDG_CONFIG_HOME/gnokii/config\fR (which is usually
+\fI$HOME/.config/gnokii/config\fR),
+\fI$XDG_CONFIG_DIRS/gnokii/config\fR (which is usually
+\fI/etc/xdg/gnokii/config\fR),
+\fI$HOME/.gnokiirc\fR (legacy) and \fI/etc/gnokiirc\fR (legacy).
+.TP 
+.BR "\-\-phone \fIname\fP"
+usees parameters from the given phone section of your config file. A phone section named 'foo' starts with [phone_foo] and is used as \-\-phone foo
+
+.SH "OPTIONS"
+The options that are recognized by
+.B gnokii
+can be divided into several different groups.
+
+.SS GENERAL
+.TP 
+.BR "\-\-help"
+displays usage information.
+.TP 
+.BR "\-\-version"
+displays version and copyright information.
+.TP 
+.BR "\-\-monitor [\fIdelay\fR|\fIonce\fP]"
+continually updates phone status to stderr. Optional \fIdelay\fR parameter sets the refresh interval to \fIdelay\fR seconds. Default is 1.
+\fIonce\fP means the output will be printed only once.
+.TP 
+.BR "\-\-shell"
+runs interactive session that will allow to run sequent gnokii commands
+without a need to reconnect for the sequent commands.
+
+.SS DIALING
+.TP 
+.BR "\-\-getspeeddial \fIlocation\fP"
+reads speed dial from the specified location.
+.TP 
+.BR "\-\-setspeeddial \fInumber\fP \fImemory_type\fP \fIlocation\fP"
+specify speed dial.
+\fIlocation\fP number 1 is usually reserved for voice mailbox number and it is unavailable as speed dial.
+.TP 
+.BR "\-\-dialvoice \fInumber\fP"
+initiate voice call.
+On success print the \fIcallid\fP identifier to be used with the \-\-hangup command.
+The \-\-monitor command can be used to show the \fIcallid\fP.
+
+With \fImodel = AT\fP direct dialing from phonebooks is supported with careful use
+of shell escaping, for example:
+ gnokii \-\-dialvoice ">SM42"   # dial the number in location 42 of SM memory
+ gnokii \-\-dialvoice '>"Home"' # dial the number if string matches exactly a contact name
+.TP 
+.BR "\-\-senddtmf \fIstring\fP"
+send DTMF sequence.
+.TP 
+.BR "\-\-answercall\fP \fIcallid\fP"
+answer an incoming call.
+\fIcallid\fP is a small integer number used to identify one of the incoming calls.
+The \-\-monitor command can be used to show the \fIcallid\fP.
+.TP 
+.BR "\-\-hangup\fP \fIcallid\fP"
+hangup an incoming call or an already established call.
+\fIcallid\fP is a small integer number used to identify one of the incoming calls.
+If you initiated the call with \-\-dialvoice this is the number printed by that command.
+The \-\-monitor command can be used to show the \fIcallid\fP.
+.TP 
+.BR "\-\-divert {\-\-op|-o} {register|enable|query|disable|erasure} {\-\-type|-t} {all|busy|noans|outofreach|notavail} {\-\-call|-c} {all|voice|fax|data} [{\-\-timeout|-m} \fItime_in_seconds\fP] [{\-\-number|-n} \fInumber\fP]"
+Manage call diverting/forwarding.
+
+.B \-\-op
+specifies one of the operations:
+.B register enable query disable erasure 
+
+.B \-\-type
+specifies one of the event types:
+.B busy noans outofreach notavail unconditional all
+
+\-\-call specifies one of the call types:
+.B voice fax data all
+
+.B \-\-timeout
+is the number of seconds an incoming call will ring before being forwarded to the registered number (use with \-\-type noans)
+
+.B \-\-number
+is the phone number to which calls are to be forwarded
+
+.SS PHONE SETTINGS
+.TP 
+.BR "\-\-getdisplaystatus"
+shows what icons are displayed.
+.TP 
+.BR "\-\-displayoutput"
+show texts displayed in phone's screen.
+.TP 
+.BR "\-\-getprofile [\fInumber\fP]"
+show settings for selected(all) profile(s).
+.TP 
+.BR "\-\-setprofile"
+sets settings for selected(all) profile(s).
+.TP 
+.BR "\-\-getactiveprofile"
+reads the active profile.
+.TP 
+.BR "\-\-setactiveprofile \fIprofile_no\fR"
+sets active profile to the profile number \fIprofile_no\fR.
+.TP 
+.BR "\-\-netmonitor {\fIreset\fP|\fIoff\fP|\fIfield\fP|\fIdevel\fP|\fInext\fP|\fInr\fP}"
+setting/querying netmonitor mode.
+.TP 
+.BR "\-\-reset [\fIsoft\fP|\fIhard\fP]"
+resets the phone.
+Depending on phone, the \fIhard\fP option also deletes everything in the internal memory and restores the factory settings.
+
+.SS TODO
+.TP 
+.BR "\-\-gettodo \fIstart_number\fP [\fIend_number\fP|\fIend\fP] [\-v|\-\-vCal]"
+get the notes with numbers from \fIstart_number\fR to \fIend_number\fR from ToDo list.
+\fIend\fR is a keyword that denotes 'everything till the end'.
+
+.PP 
+\-v \- output in vCalendar 1.0 format
+.TP 
+.BR "\-\-writetodo \fIvCalendarfile\fR \fIstart_number\fP [\fIend_number\fP|\fIend\fP]"
+write the notes with numbers from \fIstart_number\fR to \fIend_number\fR from vCal file \fIvcalfile\fR to ToDo list.
+More than one note a time can be saved.
+\fIend\fR is a keyword that denotes 'everything till the end'.
+.PP 
+number \- location of the note in the vCalendar file
+.TP 
+.BR "\-\-deletealltodos"
+delete all notes from the ToDo list.
+
+.SS CALENDAR
+.TP 
+.BR "\-\-getcalendarnote \fIstart_number\fP [\fIend_number\fP|\fIend\fP] [\-v|\-\-vCal]"
+get the notes with numbers from \fIstart_number\fR to \fIend_number\fR from calendar.
+\fIend\fR is a keyword that denotes 'everything till the end'.
+.PP 
+\-v \- output in vCalendar 1.0 format
+.TP 
+.BR "\-\-writecalendarnote \fIvcalfile\fR \fIstart_number\fP [\fIend_number\fP|\fIend\fd]"
+write the notes with numbers from \fIstart_number\fR to \fIend_number\fR from vCal file \fIvcalfile\fR to a phone calendar.
+More than one note a time can be saved.
+\fIend\fR is a keyword that denotes 'everything till the end'.
+.PP
+number \- location of the note in the vCalendar file
+.TP 
+.BR "\-\-deletecalendarnote \fIstart_number\fP [\fIend_number\fP|\fIend\fP]"
+delete the notes with numbers from \fIstart_number\fR to \fIend_number\fR from calendar. \fIend\fR is a keyword that denotes 'everything till the end'.
+
+.SS SMS
+.TP 
+.BR "\-\-getsms \fImemory_type\fR \fIstart\fP [\fIend\fP] [\-f|\-\-file \fIfile\fP] [\-F|\-\-force\-file \fIfile\fR] [\-a|\-\-append\-file \fIfile\fR] [\-d|\-\-delete]"
+gets SMS messages from specified \fImemory type\fR starting at entry \fIstart\fR and ending at \fIend\fR.
+For the \fImemory types\fR you usually use SM for the SIM card and ME for the phone memory
+(or MT for mixed phone and SIM memory, which preferred type for modern
+Motorolas). The exception are the phones supported by nk7110 (Nokia 7110/6210/6250) and nk6510 (Nokia 6310/6510/8310) drivers. For these you should use IN for the Inbox, OU for the Outbox, AR for the Archive, TE for the Templates and F1, F2, ... for your own folders.
+Use the \fB\-\-showsmsfolderstatus\fR command to get a list of \fImemory types\fR available in your phone.
+\fIend\fR can be a number or the string 'end'.
+If \fIend\fR is not specified only one location \- \fIstart\fR is read.
+Messages are printed to stdout. Additionally, if \-\-file \fIfile\fR is
+used, messages are saved in \fIfile\fR in mbox format. If \fIfile\fR already
+exists, user is prompted whether to overwrite it. If \-\-force\-file \fIfile\fR
+is used gnokii overwrites the file without asking. If \-\-append\-file
+\fIfile\fR is used messages are appended to the file.
+If \-\-delete switch is used, the message is deleted after reading.
+.TP 
+.BR "\-\-deletesms \fImemory_type\fP \fIstart\fP [\fIend\fP]"
+deletes SMS messages from specified \fImemory type\fR starting at entry \fIstart\fR and ending at \fIend\fR.
+If \fIend\fI is not specified only one location \- \fIstart\fR is deleted.
+.TP 
+.BR "\-\-sendsms \fIdestination\fP [\-\-smsc \fImessage_center_number\fP | \-\-smscno \fImessage_center_index\fP] [\-r|\-\-report] [\-8|\-\-8bit] [\-C|\-\-class \fIn\fP] [\-v|\-\-validity \fIn\fP] [\-i|\-\-imelody] [\-a|\-\-animation \fIfile;file;file;file\fR] [\-o|\-\-concat \fIthis;total;serial\fR] [\-w|\-\-wappush \fIurl\fR]"
+sends an SMS message to \fIdestination\fR via \fImessage_center_number\fR or SMSC number taken from phone memory from address \fImessage_center_index\fR.
+If this argument is omitted SMSC number is taken from phone memory from location 1.
+Message text is taken from STDIN.
+Meaning of other optional parameters:
+.PP
+\-r | \-\-report \- request for delivery report
+.PP
+\-8 | \-\-8bit - set 8bit coding
+.PP 
+\-C | \-\-class \fIn\fR \- Class Message \fIn\fR, where \fIn\fR can be 0..3
+.PP 
+\-v | \-\-validity \fIn\fR \- validity in minutes
+.PP 
+\-i | \-\-imelody \- send iMelody within SMS
+.PP
+\-a | \-\-animation \fIfile;file;file;file\fR - send animation message
+.PP
+\-o | \-\-concat \fIthis;total;serial\fR - send \fIthis\fR part of all \fItotal\fR parts identified by \fIserial\fR
+.PP
+\-w | \-\-wappush \fIurl\fR - send wappush to the given \fIurl\fR
+.TP 
+Sample usage:
+echo "This is a test message" | gnokii \-\-sendsms +48501123456 \-r
+
+.TP 
+.BR "\-\-savesms [\-\-sender \fIfrom\fP] [\-\-smsc \fImessage_center_number\fP | \-\-smscno \fImessage_center_index\fP] [\-\-folder \fIfolder_id\fP] [\-\-location \fInumber\fP] [\-\-sent | \-\-read] [\-\-deliver] [\-\-datetime \fIYYMMDDHHMMSS\fP]"
+saves SMS messages to phone. Messages are read from STDIN. You can specify the following optional arguments:
+.PP 
+\-\-sender \- set the sender number (only \fI\-\-deliver\fP)
+.PP 
+\-\-smsc \fImessage_center_number\fR \- set the SMSC number (only \fI\-\-deliver\fP)
+.PP 
+\-\-smscno \fImessage_center_index\fR \- SMSC number taken from phone memory from address \fImessage_center_index\fR (only \fI\-\-deliver\fP)
+.PP 
+\-\-folder \fIfolder_id\fR \- folder ID where to save the SMS to (only valid for newer phones, i.e. 6210/6510 series). For legal values see \fI\-\-getsms\fR.
+.PP 
+\-\-location \fInumber\fR \- save the message to location \fInumber\fR
+.PP 
+\-\-sent | \-\-read \- mark the message saved/read depending on \fI\-\-deliver\fP
+.PP 
+\-\-deliver \- set the message type to SMS_Deliver
+.PP
+\-\-datetime \fIYYMMDDHHMMSS\fR \- sets datetime of delivery, i.e. 031123185713 would set message delivery time to 23rd November 2003, 6:57:13 PM
+
+.TP 
+.BR "\-\-getsmsc [\fIstart_number\fP [\fIend_number\fP]] [\-r|\-\-raw]"
+show the SMSC parameters from specified location(s) or for all locations.
+
+.TP
+.BR "\-\-setsmsc"
+set SMSC parameters read from STDIN. See \fI\-\-raw\fP output of \fI\-\-getsmsc\fR for syntax.
+
+.TP 
+.BR "\-\-createsmsfolder \fIname\fP"
+create SMS folder with name \fIname\fR.
+
+.TP 
+.BR "\-\-deletesmsfolder \fInumber\fP"
+delete folder # \fInumber\fR of 'My Folders'.
+
+.TP
+.BR  \-\-showsmsfolderstatus
+list SMS folder names with \fImemory types\fR and total number of messages available.
+
+.TP 
+.BR "\-\-smsreader"
+keeps reading incoming SMS and saves them into the mailbox.
+
+.SS MMS
+.TP 
+.BR "\-\-getmms \fImemory_type\fR \fIstart\fP [\fIend\fP] [{\-\-pdu|\-\-raw} \fIfile\fR] [\-o|\-\-overwrite]"
+gets MMS messages from specified \fImemory type\fR starting at entry \fIstart\fR and ending at \fIend\fR.
+Default output format is human readable, alternative output formats are
+\-\-pdu which is the binary format of MMS as received by the phone from the network
+and \-\-raw which saves the data as read from the phone.
+.PP
+When the \-o or \-\-overwrite option is used, existing files are overwritten without asking.
+.PP
+
+.SS LOGOS
+.TP 
+.BR "\-\-sendlogo {caller|op|picture} \fIdestination\fP \fIlogofile\fP [\fInetwork_code\fP]"
+send the \fIlogofile\fR to \fIdestination\fR as operator or CLI logo.
+.TP 
+.BR "\-\-setlogo op [\fIlogofile\fP [\fInetwork_code\fP]]"
+.TP
+.BR "\-\-setlogo startup [\fIlogofile\fP]
+.TP 
+.BR "\-\-setlogo caller [\fIlogofile\fP [\fIcaller_group_number\fP [\fIgroup_name\fP]]]"
+set or clear operator, startup or caller logo.
+.TP
+.BR "\-\-setlogo {dealer|text} [\fItext\fP]"
+set or clear welcome note.
+.TP
+.BR "\-\-getlogo op [\fIlogofile\fP [\fInetwork_code\fP]]"
+.TP
+.BR "\-\-getlogo startup [\fIlogofile\fP [\fInetwork_code\fP]]"
+.TP
+.BR "\-\-getlogo caller [\fIcaller_group_number\fP [\fIlogofile\fP [\fInetwork_code\fP]]]"
+get operator, startup or caller logo.
+.TP
+.BR "\-\-getlogo {dealer|text}"
+get welcome note.
+.TP
+.BR "\-\-viewlogo \fIlogofile\fP"
+print the \fIlogofile\fP as ASCII art.
+Formats that are automatically detected are: NOL, NGG, NSM, NLM, BMP, I61, GGP, XPM. The OTA format can be used only if the filename ends with the .otb extension.
+.PP
+Format of \fInetwork_code\fP parameter is 3 digits MCC, a space, 2 digits MNC surrounded by single or double quotes, eg. "123 45".
+
+.SS RINGTONES
+.TP 
+.BR "\-\-sendringtone \fIdestination\fI \fIrtttlfile\fP"
+send the \fIrtttlfile\fR to \fIdestination\fR as ringtone.
+.TP 
+.BR "\-\-setringtone \fIrtttlfile\fP"
+set the \fIrtttlfile\fR as ringtone (on 6110).
+
+.SS PHONEBOOK
+.TP 
+.BR "\-\-getphonebook \fImemory_type\fP \fIstart_number\fP [\fIend_number|end\fP] [\fI[\-r|\-\-raw]|[\-v|\-\-vcard]|[\-l|\-\-ldif]\fP]"
+reads specified memory location from phone.
+If \fIend_number\fR is not specified only one location \- \fIstart\fR is read.
+If instead of \fIend_number\fR the text \fIend\fR is specified then gnokii
+will read from \fIstart_number\fR until it encounters a non\-existant location.
+Valid \fImemory types\fR are: ME, SM, FD, ON, EN, DC, RC, MC, LD:
+.IP
+.B ME
+Internal memory of the mobile equipment
+.IP
+.B SM
+SIM card memory
+.IP
+.B FD
+Fixed dial numbers
+.IP
+.B ON
+Own numbers
+.IP
+.B EN
+Emergency numbers
+.IP
+.B DC
+Dialled numbers
+.IP
+.B RC
+Received calls
+.IP
+.B MC
+Missed calls
+.IP
+.B LD
+Last dialed numbers 
+.PP
+Normally you get verbose output. 
+You can use \fI\-v\fR or \fI\-\-vcard\fR switch to get output in vCard format or \fI\-l\fR or \fI\-\-ldif\fR switch to get output in ldif format or \fI\-r\fR or \fI\-\-raw\fR switch to get the raw output which is explained below.
+You can use it then with \fI\-\-writephonebook\fR.
+.TP 
+.BR "\-\-writephonebook [\fI\-o|\-\-overwrite] [\-f|\-\-find\-free] [\-m|\-\-memory-type|\-\-memory memory_type] [\-n|\-\-memory-location|\-\-location number] [[\-v|\-\-vcard]|[\-l|\-\-ldif]\fP]"
+reads data from stdin and writes to phonebook.
+Uses the same format as provided by the output of the getphonebook command.
+Default is raw format (see below for details) and alternate formats are vCard and ldif.
+.PP
+With \fI\-\-memory-type memory_type\fP and \fI\-\-memory-location number\fP
+you can set a memory type and a location if the input data doesn't specify them.
+.PP
+When the \-o or \-\-overwrite option is used, existing entries at a given
+location are overwritten.
+.PP
+When the \-f or \-\-find\-free option is given,
+.B gnokii
+tries to find a free location.  In this case, you can omit the location field
+in the input data.
+.PP
+The raw phonebook format is very simple.  Each line represents one entry.  Fields
+are separated by semicolons.  Semicolons aren't allowed inside a field.  The
+fields have to be in this order (the subentries are optional, ie. you can
+repeat all subentry field multiple times, but they have to be alltogether in
+the given order):
+.IP "" .5i
+name
+.IP "" .5i
+number
+.IP "" .5i
+memory_type
+.IP "" .5i
+entry_location
+.IP "" .5i
+caller_group_number
+.IP "" .5i
+subentry_type
+.IP "" .5i
+subentry_number_type
+.IP "" .5i
+subentry_id
+.IP "" .5i
+subentry_text
+.PP
+Possible values of
+.B caller_group_number
+and the corresponding caller groups are (these are defaults, you are able to
+change these manually in your phone):
+.IP
+.B 0
+Family
+.IP
+.B 1
+VIP
+.IP
+.B 2
+Friends
+.IP
+.B 3
+Colleagues
+.IP
+.B 4
+Other
+.IP
+.B 5
+No group
+.IP
+.PP
+Possible subentry types are described in the \fIgnokii/common.h\fR file:
+.IP
+.B 7
+subentry is the name
+.IP
+.B 8
+subentry is the email address
+.IP
+.B 9
+subentry is the postal address (snail mail)
+.IP
+.B 10
+subentry is the note (text field)
+.IP
+.B 11
+subentry is the number
+.IP
+.B 12
+subentry is the ringtone
+.IP
+.B 19
+subentry is the date (used for DC, RD, LD)
+.IP
+.B 26
+subentry is the pointer (pointer to the other memory)
+.IP
+.B 27
+subentry is the logo (bitmap)
+.IP
+.B 28
+subentry is the logo switch
+.IP
+.B 30
+subentry is the group (octect)
+.IP
+.B 44
+subentry is the URL
+.IP
+.B 47
+subentry is the location (octect)
+.IP
+.B 51
+subentry is the image (file id)
+.IP
+.B 55
+subentry is the ringtoneadv (file id or ringtone)
+.IP
+.B 56
+subentry is the userid
+.IP
+.B 63
+subentry is the pttaddress
+.IP
+.B 67
+subentry is the extgroup
+.IP
+.B 69
+subentry is the video (file id)
+.IP
+.B 70
+subentry is the firstname
+.IP
+.B 71
+subentry is the lastname
+.IP
+.B 74
+subentry is the postaladdress
+.IP
+.B 75
+subentry is the extendedaddress
+.IP
+.B 76
+subentry is the street
+.IP
+.B 77
+subentry is the city
+.IP
+.B 78
+subentry is the stateprovince
+.IP
+.B 79
+subentry is the zipcode
+.IP
+.B 50
+subentry is the country
+.IP
+.B 82
+subentry is the formalname
+.IP
+.B 84
+subentry is the jobtitle
+.IP
+.B 85
+subentry is the company
+.IP
+.B 86
+subentry is the nickname
+.IP
+.B 87
+subentry is the birthday
+.PP
+Possible subentry number types are described in the \fIgnokii/common.h\fR
+file:
+.IP
+.B 2
+number is the home phone number
+.IP
+.B 3
+number is the mobile phone number
+.IP
+.B 4
+number is the fax number
+.IP
+.B 6
+number is the work phone number
+.IP
+.B 10
+number is the general number
+.PP
+For the subentry types that don't care about number type (as text files)
+this should be set to 0. 
+.TP
+.BR "\-\-deletephonebook \fImemory_type\fP \fIstart_number\fP [\fIend_number|end\fP]"
+delete entries with \fIstart_number\fR to \fIend_number\fR from the phone
+book in \fImemory_type\fR. \fIend\fR is a keyword that denotes 'everything till the end'.
+
+.SS WAP
+.TP 
+.BR "\-\-getwapbookmark \fInumber\fP"
+reads the specified WAP bookmark from phone
+.TP 
+.BR "\-\-writewapbookmark \fIname\fP \fIURL\fP"
+write WAP bookmark to phone
+.TP 
+.BR "\-\-deletewapbookmark \fInumber\fP"
+delete WAP bookmark from phone
+.TP 
+.BR "\-\-getwapsetting \fInumber\fP [\fI\-r|\-\-raw\fP]"
+read WAP setting from phone
+.TP 
+.BR "\-\-writewapsetting"
+reads data from stdin and writes it to phone.
+Hint: see syntax from \fI\-\-getwapsetting\fP \fI\-r\fP option
+.TP 
+.BR "\-\-activatewapsetting \fInumber\fP"
+activate WAP setting \fInumber\fP
+
+
+.SS DATE, TIME AND ALARM
+.TP 
+.BR "\-\-setdatetime [\fIYYYY\fP [\fIMM\fP [\fIDD\fP [\fIHH\fP [\fIMM\fP]]]]]"
+set the date and the time of the phone.
+.TP 
+.BR "\-\-getdatetime"
+shows current date and time in the phone.
+.TP 
+.BR "\-\-setalarm \fIHH\fP \fIMM\fP"
+set the alarm of the phone.
+.TP 
+.BR "\-\-getalarm"
+shows current alarm.
+
+.SS SECURITY
+.TP 
+.BR "\-\-identify"
+get IMEI, manufacturer, model, product name and revision.
+.TP 
+.BR "\-\-entersecuritycode {\fIPIN\fP|\fIPIN2\fP|\fIPUK\fP|\fIPUK2\fP|\fISEC\fP}"
+asks for the code and sends it to the phone.
+Code is read from terminal or from stdin.
+.TP
+.BR "\-\-getsecuritycode"
+shows the currently set security code.
+.TP 
+.BR "\-\-getsecuritycodestatus"
+show if a security code is needed.
+.TP 
+.BR "\-\-getlocksinfo"
+show information about the (sim)locks of the phone:
+the lock data, whether a lock is open or closed, whether it is a user or
+factory lock and the number of unlock attempts.
+
+.SS FILE
+Note that some phones (like Nokia 6610i) support only id based operations
+(gnokii options with "byid" suffix). Use gnokiifs for the transparent support.
+.TP
+.BR "\-\-getfilelist \fIremote_path\fP"
+lists files from the given directory. Use A:\\* or B:\\* to get the root directory
+from either phone memory or card memory.
+.TP
+.BR "\-\-getfiledetailsbyid [\fIid\fP]"
+lists file details or directory contents from the entry identified by \fIid\fP.
+If no identifier is given, list the root directory contents.
+.TP
+.BR "\-\-getfileid \fIremote_filename\fP"
+gets id of the file.
+.TP
+.BR "\-\-getfile \fIremote_filename\fP [\fIlocal_filename\fP]"
+gets file identified by name and path from the phone and stores it at the local
+computer.
+.TP
+.BR "\-\-getfilebyid \fIid\fP [\fIlocal_filename\fP]"
+gets file identified by id from the phone and stores it at the local computer.
+.TP
+.BR "\-\-getallfiles \fIremote_path\fP"
+gets all files from the remote path.
+.TP
+.BR "\-\-putfile \fIlocal_filename\fP \fIremote_filename\fP"
+stores the file in the phone memory or on the memory card.
+.TP
+.BR "\-\-deletefile \fIremote_filename\fP"
+removes the file from the phone.
+.TP
+.BR "\-\-deletefilebyid \fIid\fP"
+removes the file from the phone.
+
+.SS MISC
+.TP 
+.BR "\-\-keysequence" 
+emulates pressing keys on phone keyboard.
+Input is read from stdin.
+.IP
+Supported keys (any other char is ignored):
+.RS 5
+.IP
+.B M
+menu
+.IP
+.B N
+names
+.IP
+.B P
+power
+.IP
+.B G
+green phone
+.IP
+.B R
+red phone
+.IP
+.B U
+up
+.IP
+.B D
+down
+.IP
+.B +
+increase volume
+.IP
+.B -
+decrease volume
+.IP
+.B 0123456789#*
+as is
+.RS -5
+.IP
+Example: to increase volume
+.IP
+  echo "+" | gnokii --keysequence
+.IP
+Note: this command isn't supported by all phones/drivers.
+
+.TP 
+.BR "\-\-enterchar"
+emulates typing a character on phone keyboard.
+By emulating multiple pressions of keys, it can input all characters supported by the phone in use,
+but to input an SMS predictive text should be disabled.
+Input is read from stdin,
+with newline interpreted as the "Menu" key and escape interpreted as the "Names" key.
+.IP
+Note: this command isn't supported by all phones/drivers.
+
+.TP 
+.BR "\-\-listnetworks"
+prints a list of cellular network operators with their 3-digits MCC (Mobile country code) and 2-digits MNC (Mobile Network Code).
+.IP
+Note: this command doesn't need a valid config or a phone to work.
+
+.TP 
+.BR "\-\-getnetworkinfo"
+prints information about the network currently in use.
+
+.SH "DIAGNOSTICS"
+Various error messages are printed to standard error.  The exit code
+is 0 for correct functioning.  Errors which appear to be caused by
+invalid or abused command line parameters cause an exit code of 2, and other errors cause an exit code of 1.
+
+.SH "BUGS"
+.PP 
+We write quality software here ;) but see KNOWN_BUGS just in case. If you'd like to send us the bugreport please read the README and Bugs files.
+
+.SH "AUTHOR"
+Hugh Blemings <hugh at blemings dot org>, Pavel Janik ml. <Pavel.Janik at suse dot cz> and Pawel Kot <gnokii at gmail dot com>.
+
+Manual page written by Dag Wieers <dag at mind dot be>, Pawel Kot <gnokii at gmail dot com> and Daniele Forsi <daniele at forsi dot it>.
+
+See also Docs/CREDITS from gnokii sources.
+
+.SH "COPYING"
+This program is distributed under the GNU Public License Version 2, or (at your option) any later version.
+
+.SH "SEE ALSO"
+gnokiid, xgnokii, mgnokiidev, ppm2nokia, sendsms, todologo

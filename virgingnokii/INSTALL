@@ -1,0 +1,261 @@
+Gnokii installation instructions
+================================
+
+Please note that you need development packages to build gnokii from scratch.
+You'll need tools like:
+ - git
+ - make
+ - gcc
+ - flex
+ - pkg-config
+For certain distributions like Ubuntu most of the tools are available in
+build-essentials package. You will need also the set of autotools and
+family (they are needed just for git compile):
+ - automake
+ - autoconf
+ - libtool
+ - gettext
+ - intltool
+For building gnokii you will need development packages for the used
+libraries. They are usually marked with -dev suffix, like:
+ - libbluetooth3 vs libbluetooth3-dev
+ - libical0 vs libical-dev
+Verify with your distribution what exactly do you need.
+
+Quickstart
+==========
+
+    $ libtoolize -c -f				# only for git copies
+    [ under Mac OS X use glibtoolize instead of libtoolize                  ]
+    $ glib-gettextize -f			# only for git copies
+    $ intltoolize --force --copy --automake     # only for git copies
+    $ aclocal -I m4				# only for git copies
+    $ autoheader -I m4				# only for git copies
+    $ automake --add-missing			# only for git copies
+    $ autoconf					# only for git copies
+    $ ./configure [<options>]
+    [ instead of above commands you can simply run ./autogen.sh [<options>] ]
+    [ we recommend using --enable-security option to get all gnokii         ]
+    [ capabilities                                                          ]
+    $ make
+    # make install
+    $ mkdir -p ~/.config/gnokii
+    $ cp Docs/sample/gnokiirc ~/.config/gnokii/config
+    $ $EDITOR ~/.config/gnokii/config
+    [ adjust config according to your setup and follow hints in the file    ]
+
+Requirements
+============
+
+Additional libraries and header files needed for the various gnokii parts:
+
+libgnokii:		glib-2.0
+xgnokii:		libX11, libXpm, glib-2.6, gtk+-2.0
+
+Optional libraries and files:
+bitmap support:		libXpm for xpm files support, gnokii can deal without
+			this (xgnokii cannot)
+irda support:		Linux kernel includes (there is also IrDA support
+			for Mac OS X and Windows)
+bluetooth support:	bluez (Linux Bluetooth stack) (there is also bluetooth
+			support for Mac OS X and FreeBSD)
+libical support:	libical-0.24, you may want to use gnokii internal iCal
+			implementation but it is limited, no longer developed
+			and deprecated. This is only for converting calendar
+			and todo entries into iCal files and reading such
+			files.
+libusb support:		libusb (for DKU2 cables support)
+libreadline support:    required by gnokii for --shell command support
+SIM readers support:    libpcsclite (to use a Smart Card reader instead of a phone)
+country name translation: iso-codes package (its presence is detected at runtime if
+			NLS is enabled so it can be installed at any time without
+			reconfiguring or recompiling)
+
+smsd:			glib-2.0, gmodule-2.0
+smsd plugins:
+	mysql:		libmysqlclient
+	postgresql:	libpq
+
+Please note that all libraries are autodetected by configure script.
+
+Sources:
+http://www.xfree86.org/					libX11, libXpm
+http://www.gtk.org/					glib, gtk, gmodule
+http://www.kernel.org/					Linux kernel includes
+http://www.bluez.org/					bluez (Linux Bluetooth stack)
+http://sourceforge.net/projects/freeassociation/	libical
+http://libusb.sf.net/					libusb
+http://pcsclite.alioth.debian.org/                      libpcsclite
+http://pkg-isocodes.alioth.debian.org/			iso-codes (country name translation)
+http://www.mysql.com/					libmysqlclient
+http://www.postgresql.com/				libpq
+http://tiswww.case.edu/php/chet/readline/rltop.html	libreadline
+
+However all of the libraries should be shipped by any modern Linux (and not
+only) distribution.
+
+For xgnokii you may want download gnokii-artwork package from
+http://www.gnokii.org/download/gnokii, the package containing mobile
+phone pixmaps to be used with xgnokii keyboard simulator and operator
+logo previewer.
+
+Verbose instructions
+====================
+
+Preparations
+------------
+
+If you retrieved this copy from git, then first call
+
+    $ libtoolize -c -f
+    [ under Mac OS X use glibtoolize instead of libtoolize                  ]
+    $ glib-gettextize -f
+    $ intltoolize --force --copy --automake     # only for git copies
+    $ aclocal -I m4
+    $ autoheader -I m4
+    $ automake --add-missing			# only for git copies
+    $ autoconf
+
+Now you have to determine your system specific settings.
+
+    $ ./configure [<options>]
+
+Basic options are:
+
+    --prefix=DIR
+	Sets the install path prefix. Default is /usr/local/.
+
+    --without-x
+	Compiles without GTK (X11) programs.
+		
+    --disable-nls
+	Set if you don't have/want GNU gettext support.
+
+    --enable-security
+	Set if you want to enable all security features supported by your 
+        mobile (PIN change, etc.).
+
+    --disable-rlpdebug
+	Set if you don't want RLP code compiled in.
+
+    --disable-xdebug
+	Set if you don't want X code compiled in.
+
+    --enable-fulldebug
+	Set if you want to produce binaries with debug symbols (cc -g)
+
+    --help		
+	Shows all options.
+
+This example is commonly used:
+
+    $ ./configure --prefix=/usr --enable-security
+
+Alternatively, instead of writing these commands you can use:
+
+    $ sh autogen.sh [<options>]
+
+where options are the same as with configure script. Sometimes (it happens
+mainly with libintl and libiconv) some libraries may not be correctly
+recognized. You may want to set enviromental variables to let configure do
+the work. The sample usage would be:
+
+    $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib" ./configure \
+	--prefix=/usr --enable-security
+
+or
+
+    $ CFLAGS="-I/usr/local/include -L/usr/local/lib" ./configure \
+	--prefix=/usr --enable-security
+
+and the equivalent with autogen.sh
+
+
+Compilation
+-----------
+
+Start the compilation process by typing
+
+    $ make
+
+
+Installation
+------------
+
+Install the binaries into the system with the following line:
+
+    # make install
+
+'install' target is the usual installation process that you would need in
+most cases.
+
+Note that you will need to adjust /dev/ttyS* or /dev/ircomm* and /var/lock
+permissions and ownership before starting using gnokii. An udev rules file
+for use with libusb is provided in Docs/sample.
+
+If you wish to install gnokii stuff in some other directory root (eg. when
+creating a distribution package), you can take an advantage of the DESTDIR
+variable:
+
+    $ make DESTDIR=/somewhere install
+
+
+Clean-up
+--------
+
+To remove products of the compile process, type
+
+    $ make clean
+
+Calling
+
+    $ make distclean
+
+additionaly cleans all ./configure outputs. After this command you must 
+run ./configure again if you need to use any Makefile.
+
+
+Configuration
+-------------
+
+Copy the example config file for gnokii from the Docs/sample/ directory to
+your home directory:
+
+    $ mkdir -p ~/.config/gnokii
+    $ cp Docs/sample/gnokiirc ~/.config/gnokii/config
+
+It is a plain ASCII file which can be read in any editor. Make sure you do 
+not save it in a wordprocessor's binary-format. It has to remain plain 
+text. vi, mcedit, kedit, joe or even emacs are good examples.
+
+Change the settings to fit your setup. The file should be self-explaining.
+Strings starting with `#' are comments (from `#' char till end of the line).
+
+Ubuntu hints
+============
+
+The hints most likely apply against any other Debian-based distribution and
+similiar steps need to be taken for any other distribution. The described
+steps were taken on fresh Ubuntu 9.10 installation.
+
+Grab build environment. It will install compiler, most important libraries
+like libc, make and so:
+
+    $ sudo apt-get install build-essential
+
+Get the most packages possible for gnokii compile:
+
+    $ sudo apt-get build-dep gnokii
+
+As of now build requirements are incomplete, hopefully will be fixed
+for the next version. For now you need to get some stuff manually:
+
+    $ sudo apt-get install flex libreadline6-dev
+
+If you want to play on git version you need to have git and additional
+tools:
+
+    $ sudo apt-get install git-core libtool automake autoconf intltool
+
+Now you should be able to proceed with instructions described in previous
+sections.

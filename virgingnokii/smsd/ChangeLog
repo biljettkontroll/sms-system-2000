@@ -1,0 +1,343 @@
+* Thu 25 Sep 2010 Daniele Forsi
+- Add even more information to man page
+
+
+* Thu  9 Sep 2010 Daniele Forsi
+- Add more information to man page
+
+
+* Fri 20 Aug 2010 Paweł Kot
+- Add SQLite3 backend module by Santeri Toikka.
+- Version changed to 1.4.5
+
+
+* Tue 10 Aug 2010 Daniele Forsi
+- Specify in man page that only regular messages and status reports area
+  handled, all other remain in the phone memory.
+
+
+* Thu 24 Dec 2009 Daniele Forsi
+- Add quoting around phone number to mysql code that handles multipart
+  messages. Patch by Paulius Bulotas.
+
+
+* Sun Aug 23 2009 Paweł Kot
+- Enable sending long messages with pq module.
+
+
+* Fri Mar 27 2009 Paweł Kot
+- Print short version on every startup for better bugreports.
+
+
+* Tue Feb 10 2009 Jan Derfinak
+- g_string_sprintf() replaced with g_string_printf().
+
+
+* Mon Feb  9 2009 Jan Derfinak
+- Rollback autodection of first sms position. First position now defaults
+  to 1 and can be changed to 0 with -0, --firstpos0 command line argument.
+
+
+* Mon Feb  9 2009 Daniele Forsi
+- Add examples directory with action files.
+
+
+* Sun Feb  8 2009 Daniele Forsi
+- Fix segfault when using the nk6100 driver.
+
+
+* Wed 24 Dec 2008 Daniele Forsi
+- Minor changes to man page.
+
+
+* Mon Dec  1 2008 BORBELY Zoltan
+- Restart connection if there're too many consequetive errors.
+
+
+* Sun Nov 16 2008 Jan Derfinak
+- ReadSMS() prepared gn_sms structure to remove in A_DeleteSMSMessage(). But
+  in some situation RefreshSMS() deallocated gn_sms structure before
+  A_DeleteSMSMessage() which resulted in double free bug (#23550, #23842).
+  Fixed by processing all events before RefreshSMS(). (Paul Praet)
+
+
+* Mon Oct  6 2008 Paweł Kot
+- Marked as 1.4.3
+
+
+* Mon Oct  5 2008 Paweł Kot
+- Default module is file module.
+
+
+* Sat Jul 29 2008 Jan Derfinak
+- Added possibility to use multiline SMS text in file module (idea from
+  Joan).
+
+
+* Sat Jul 29 2008 Jan Derfinak
+- Fixed potential SEGFAULT in file module when input file contains empty SMS
+  text.
+
+
+* Sun May 25 2008 Paweł Kot
+- Avoid "duplicated message" error with concatenated messages on MySQL.
+- More verbose debug information.
+
+
+* Thu May  8 2008 Daniele Forsi
+- always search the translations in $localedir, which can be choosen by 
+  the user at configure time, not in system default directory
+
+
+* Sun Jan 27 2007 Jan Derfinak
+- Added detection of first sms position.
+- Simplified locking of smsMutex.
+- A_DeleteSMSMessage now decrements phoneMonitor.sms.number.
+- phoneMonitor.working and phoneMonitor.sms.unRead commented out. They will
+  be removed in future.
+ 
+
+* Mon Jul 16 2007 Jan Derfinak
+- Switch reconnect flag (part of the MYSQL structure) to on for MySQL 5.0.13
+  and newer. It was by default on in versions of the API older than 5.0.3.
+
+
+* Sat Jul  7 2007 Paweł Kot
+- add support for multipart SMS for MySQL backend (Alain Degreffe)
+
+
+* Fri Nov 17 2006 Paweł Kot
+- reconnect only on timeout
+
+
+* Sun Oct  1 2006 Jan Derfinak
+- exit after unsuccessful insert into DB (Massimo Citterio)
+
+
+* Thu Aug 10 2006 Paweł Kot
+- fix problems with exporting symbols from shared libraries/plugins with
+  newer gcc versions
+
+
+* Wed May 10 2006 Jan Derfinak
+- added setlocale() call
+
+
+* Thu May  4 2006 Helge Deller, Paweł Kot
+- Switch smsd to new libgnokii functions
+
+
+* Mon Jan 30 2006 Jan Derfinak
+- Added schema support for PostgreSQL.
+
+
+* Sat Jan 21 2006 Jan Derfinak
+- Fix gcc 4 type check warnings.
+
+
+* Sun Jan 15 2006 Daniele Forsi
+- Changed again some messages to be consistent across the whole project
+
+
+* Sat Jan  7 2006 Daniele Forsi
+- Added smsd/file.c smsd/mysql.c smsd/pq.c smsd/smsd.c to the list of
+  translatable files in po/POTFILES.in (they were already gettextized)
+- Changed some messages to be consistent across the whole project
+
+
+* Wed Aug 10 2005 Jan Derfinak
+- Switch to glib2.
+
+
+* Fri May 13 2005 Paweł Kot
+- README should say about pq/mysql.la not pq/mysql.so
+
+
+* Sat Apr  9 2005 Jan Derfinak 
+- version 1.4
+- added time window for outgoing sms (Martin White <gnokii at mgw.org.uk>)
+- fixed strncpy() if mysql_fetch_row returns NULL
+- DATABASE FORMAT CHANGED - please add new columns 'not_before', 'not_after'
+  to outbox
+
+
+* Tue Jan 25 2005 Jan Derfinak 
+- Improved db modules handling in Makefile by David Vrabel.
+
+
+* Tue Jan 25 2005 David Vrabel
+- Make configurable where to look for the new messages.
+
+
+* Sun Oct 17 2004 Paweł Kot
+- Correctly exit when the device is locked.
+
+
+* Mon Oct 11 2004 Jan Derfinak 
+- Added support for drivers without GN_OP_GetSMSStatus.
+
+
+* Tue Aug  3 2004 Jan Derfinak 
+- Changed LDLIBS for FreeBSD. Idea from <robert@dk-hostmaster.dk>.
+
+
+* Sat Jul 10 2004 Paweł Kot
+- Use pq_config instead of hardcoding paths in Makefile
+
+
+* Sun Jun 27 2004 Paweł Kot
+- Move appending LDLIBS to ../Makefile.global (in case of common libraries)
+
+
+* Sun Jun 20 2004 Paweł Kot
+- Really finish libtolization: use *.lo objects instead of *.o. It avoids
+  mixing fPIC (from libgnokii) and non-fPIC (from smsd) code.
+
+
+* Wed May 19 2004 Jan Derfinak 
+- The meaning of default value 'now' changed in latest postgresql.
+  It is replaced with function now().
+  Thanks to Stefan de Konink <stefandekonink@utelisys.com>.
+
+
+* Sun May  9 2004 Paweł Kot
+- gn_cfg_read changed the signature
+
+
+* Thu Feb 19 2004 BORBELY Zoltan
+- XDEBUG eliminated, using gn_log_xdebug
+
+
+* Wed Jan 22 2004 BORBELY Zoltan
+- libtoolization finished
+- Update README to reflect libtoolization
+
+
+* Sun Jan 04 2004 Paweł Kot
+- Update README with some modules clarification
+
+
+* Fri Jan 02 2004 Guido Falsi <mad@madpilot.net>
+- Use $(CC) detected by configure script instead of hardcoded gcc.
+  Taken from FreeBSD ports.
+
+
+* Sun Oct 05 2003 Jan Derfinak 
+- Added possibility to run multiple instances at the same time.
+- Version changed to 1.2.
+
+
+* Tue Sep 30 2003 Jan Derfinak 
+- added alpha support for glib2
+
+
+* Fri Aug 29 2003 Paweł Kot
+- Add the manual page
+
+
+* Tue Jun 03 2003 Ville Skyttä <ville.skytta@iki.fi>
+- Make SMSD install FHS compliant.
+
+
+* Tue Apr 08 2003 Bernhard Minks <bm@fachschaft.informatik.fh-muenchen.de>
+- compat.h added to file.c, mysql.c and pq.c.
+
+
+* Mon Feb 10 2003 BORBELY Zoltan
+- Bad SQL statement fixed in the mysql module.
+
+
+* Sun Feb 09 2003 Jan Definak 
+- Added comment for Tru64 from Peter Kolmisoppi <peter@opoint.com>.
+- Added support for logging to file.
+- Added possibility to request delivery report per message. Global option
+  -r, --report is deprecated.
+- Version number changed from 1.0 to 1.1-cvs.
+
+
+* Sat Jan 18 2003 Paweł Kot
+- FreeBSD doesn't have libdl and can compile smsd without
+  -ldl. Add the comment in the Makefile as well as the
+  correct LDLIBS for FreeBSD (disabled by default).
+
+
+* Fri Dec 27 2002 BORBELY Zoltan
+- Converted libfile.so to new libgnokii API.
+
+
+* Thu Dec 26 2002 Paweł Kot
+- Converted to new libgnokii API.
+
+
+* Sun Aug 11 2002 Jan Derfinak 
+- Added libfile.
+
+
+* Sun Aug  4 2002 Jan Derfinak 
+- Added support for phones with sms folders.
+
+
+* Sun Jul 21 2002 Paweł Kot
+-  When some characters are not from the default alphabet
+   encode them in the unicode.
+
+
+* Sun Jul 07 2002 Jan Derfinak 
+- Fixed sms's sending to reflect changes in gnokii code.
+
+
+* Fri Jun 28 2002 Jan Derfinak 
+- Fixed sms's receiving to reflect changes in gnokii code.
+- Sms's sending still don't work.
+
+
+* Tue Apr 23 2002 Paweł Kot
+- Don't use 'connect' as the variable name.
+- GE_SMSSENDOK is deprecated.
+
+
+* Wed Mar 20 2002 BORBELY Zoltan
+- GSM_Data structures initialised correctly.
+- Minor locking fixes.
+
+
+* Thu Feb 14 2002 Jan Derfinak 
+- Rewrited PostgreSQL plugin.
+- Added retrying when sending sms's.
+- Removed GSMLinkOK test.
+- Code and documentation cleanup.
+
+
+* Sun Feb 03 2002 Jan Derfinak 
+- MySQL support is now really working.
+
+
+* Fri Feb 01 2002 Jan Derfinak 
+- Added experimental support for MySQL. Fixes will coming soon. 
+  (Ganesh Lohia <ganesh@pobox.com>)
+
+
+* Sun Jan 27 2002 Jan Derfinak 
+- Fix core dumps.
+- Added support for database's plugins.
+- Added option for reading delivery reports.
+
+
+* Mon Jan 14 2002 Jan Derfinak 
+- added parsing for \ and ' in incoming sms's.
+- Changed "insert into <table> values (<Val1> <Val2> .. <Valn>)"
+  to "insert into <table> (<Col1> <Col2> .. <Coln>) values (<Val1> <Val2> ..
+  <Valn>)".
+- Rename GetSMS to GetSMS2 (function with this name appears in gsm-api.h)
+- Rename SendSMS to SendSMS2 (function with this name appears in gsm-api.h)
+- More fixes to new structure.
+
+
+* Mon Dec  3 2001 Paweł Kot
+- Updated to the new libsms.
+- Be more friendly to the other postgresql includes and libraries locations.
+- Use libgnokii.so.
+
+
+* Fri 02 Feb 2001 Jan Derfinak 
+- Fixed smsd to new capability code.

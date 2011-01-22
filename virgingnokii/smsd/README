@@ -1,0 +1,231 @@
+NOTE: The database format from version 1.0 to 1.1 changed! You must add column
+dreport to outbox table.
+
+NOTE: The database format from version 1.1 to 1.2 changed! You must add column
+phone to outbox and inbox tables.
+
+NOTE: The database format from version 1.3 to 1.4 changed! You must add
+columns not_before and not_after to outbox.
+
+NOTE: You must NOT ./configure --disable-shared in gnokii directory to let
+smsd compile correctly.
+
+INTRODUCTION
+
+The SMSD (SMS daemon) program is intended for receiving and sending SMS's.
+I provide the program AS IS without any warranty under GPL.
+
+The program is designed to use modules (plugins) to work with an SQL server.
+Currently are supported PostgreSQL, MySQL and a special module 'file' which is
+designed to work without an SQL database (see below for special instructions
+for the file module). See option --module. SMSD uses an SQL server as a
+repository for SMS's. You must create a database (default name is 'sms') with
+tables defined in sms.tables.{module}.sql files. Table 'inbox' is for
+received SMS's:
+number     - phone number from which is sms received
+smsdate    - date set by SMS center
+insertdate - date SMS was inserted into table
+text       - SMS text
+phone      - number of phone to use. If you use smsd without -t option you
+             can ignore this column. See -t option below.
+processed  - smsd sets this always to FALSE. You can use it for another
+             program which will parse SMS's.
+
+When the phone receives an SMS, SMSD moves it into 'inbox' table and
+removes the SMS from the phone.
+
+Table 'outbox' is for outgoing SMS's. SMSD periodicaly looks into this table
+and searches for lines with attribute 'processed' set to FALSE. If it find
+such SMS, it will send SMS to 'number':
+number         - recipient's phone number
+processed_date - date of processing SMS.
+insertdate     - date of inserting SMS in table
+text           - SMS text
+phone          - number of phone to use. If you use smsd without -t option you
+                 must not fill this column. See -t option below.
+processed      - new SMS must have this attribut set to FALSE. 
+                 SMSD will send this SMS and will update 'processed' to TRUE.
+error          - This attribute contains return value of gn_sms_send() function.
+                 For explanation of numeric values see <gnokii/error.h> in
+                 gnokii source.                 
+dreport        - request for delivery report per message. Possible values
+                 are 0 for no delivery report, 1 for delivery report.
+not_before     - sms will not be send before this time (default 00:00:00).
+not_after      - sms will not be send after this time (default 23:59:59).
+
+SMSD is multi threaded program. If you list processes you will see more then
+one instance of smsd.
+
+MySQL module supports incoming multipart SMSes. It uses special table called
+'multipartinbox':
+number     - same as inbox
+smsdate    - same as inbox
+insertdate - same as inbox
+text       - same as inbox
+phone      - same as inbox
+processed  - same as inbox
+refnum     - identifier of the multipart series (all parts have the same
+             refnum)
+maxnum     - total number of SMS parts
+curnum     - number of current part within the series
+
+
+THE FILE MODULE
+
+This module doesn't need an SQL server to work. For incoming messages it
+work in a way that it calls a program giving phone number, date as parameter
+and the message text on stdin. In the smsd directory there is as example file
+action. It shows sms data to stdout. If you want something usefull you must
+write your own action.
+For outgoing messages you can set spool directory where smsd looks
+regularly.
+
+Incoming sms are passed in format
+action number date < sms
+
+Outgoing sms must be in format:
+number
+text
+
+The name of file is unimportant but smsd ignores all files with prefix
+"ERR.". If smsd succesfuly sends sms, it removes file from spool directory.
+If smsd cannot sends sms prepend file with "ERR." prefix and ignores it.
+
+If you use -m file, -u (--user) and -c (--host) will have other meaning.
+-u is for action (action must be executable)
+-c is for spool directory where smsd looks for sms's. Smsd must have read
+   and write permissions to this directory.
+
+-p, -d parameters have no meaning when -m file is used.
+
+If you don't specify -u, default action is to print sms to stdin.
+If you don't specify -c, sms sending will be disabled.
+
+
+
+OPTIONS
+
+Options:
+-u, --user db_username
+	Specify user name.
+
+-p, --password db_password
+	Specify user password.
+
+-d, --db db_name
+	Specify database name.
+ 
+-c, --host db_hostname
+	Specify database server host name.
+
+-s, --schema db_schema
+	Specify database schema.
+
+-m, --module db_module
+	Specify which module to use for connection to DB server.
+	Currently supported are pq for PostgreSQL, mysql for MySQL, sqlite for 
+	SQLite3 and file for the text file (see THE FILE MODULE section).
+	Default is file module. 
+
+-l, --libdir path_to_db_module
+	Specify path to DB modules. If you specify pq module, smsd searches
+	in libdir for file libsmsd_pq.so (for mysql - libsmsd_mysql.so).
+	Do not interchange this plugins with default SQL libraries from
+	database distribution!
+
+-f, --logfile file
+	If used, smsd will monitor sms traffic to file "file". File is
+	reopened and closed for every message so you can simply rename or
+	delete it if you want rotate logs. If you use '-' as filename smsd
+	will use standard output.
+
+-t, --phone phone_number
+	You can run more instances of smsd. One instance per phone. In this
+	setup you must configure phone section in the config file. For example:
+
+	[global]
+	port = /dev/ttyS0
+	model = 6110
+	initlength = default
+	connection = serial
+	bindir = /usr/local/sbin/
+	use_locking = no
+	serial_baudrate = 38400
+	smsc_timeout = 10
+
+	[phone_1]
+	port = /dev/ttyS0
+	model = 6110
+	initlength = default
+	connection = serial
+	bindir = /usr/local/sbin/
+	use_locking = no
+	serial_baudrate = 38400
+
+	[phone_2]
+	port = /dev/ttyS1
+	model = AT
+	initlength = default
+	connection = serial
+	bindir = /usr/local/sbin/
+	use_locking = no
+	serial_baudrate = 38400
+	smsc_timeout = 10
+
+	In this setup if you run smsd without -t option it will use config
+	from global section. If you run smsd with -t 1 it will use config
+	from phone_1 and likewise with -t 2 uses phone_2. In case of use -t
+	option smsd fill phone number for incoming sms's and in outbox it
+	looks only for sms's with the specified phone number in column
+	'phone'. This behaviour give you possibility to run one instance
+	of smsd for every phone you have at the same time.
+
+-i, --interval interval    
+	Polling interval for incoming sms's in seconds. Default is 1 second.
+
+-S, --maxsms number    
+	When phone driver doesn't support sms status it is possible
+	to specify number of sms's supported by phone. Default is 10.
+	If driver support sms status this option is ignored.
+
+-b, --inbox memory_type
+	Where to look for new messages.  For the memory_type you usually use
+	SM for the SIM card and ME for the phone memory. The exception are the
+	phones supported by nk7110 (Nokia 7110/6210/6250) and nk6510 (Nokia   
+	6310/6510/8310) drivers. For these you should use IN for the Inbox, OU
+	for the Outbox, AR for the Archive, TE for the Templates and F1,
+	F2, ... for your own folders.
+
+-0, --firstpos0
+	SMSD starts messages reading from position 1. If your phone stores
+	sms's from postion 0, use this option.
+
+-v, --version
+	Shows smsd version.
+
+-h, --help
+	Shows short help.
+
+
+
+COMPILATION
+
+SMSD is now compiled by default with gnokii 'make' command; see detailed
+instructions in top level INSTALL file.
+The configure script autodetects the plugins to build:
+ - the PostgreSQL module is built if pg_config is present
+   (plugin file is libsmsd_pq.so)
+ - the MySQL module is built if mysql_config is present
+   (plugin file is libsmsd_mysql.so)
+ - the SQLIte module is built if sqlite3 libraries are detected
+   (plugin file is libsmsd_sqlite.so)
+ - the file module is built if glib is present
+   (plugin file is libsmsd_file.so)
+
+Note that you can build all of the modules (libsmsd_pq, libsmsd_mysql and
+libsmsd_file) but you should load just one.
+
+SMSD shares gnokii's runtime configuration file and libgnokii.
+
+
+Jan Derfinak <ja (at) mail (dot) upjs (dot) sk>

@@ -1,0 +1,31 @@
+-- README-6110                                     --
+-- Notes, bugs and a todo list for the 6110 series --
+
+* Notes *
+
+Code for the 6110 phones has been tested with the DAU-9P MBus Cable NSE-3.
+
+Phones of 6110 Series have somewhat different protocol then other Nokia
+phones series. More detailes on the protocol you'll find in the
+Docs/protocol/nk6110.txt file inside the gnokii sources.
+
+The current code allows you to do almost everything you are able to do with
+these phones. It covers SMS, phonebook, calendar operations and much, much
+more.
+
+There are some problems with the few firmwares (V 05.24). It
+seems that these firmware is weird. If you have a Nokia with this
+firmware, it accepts the PIN request (displays Code Accepted message)
+but nothing is returned to the PC. The communication is only in
+one direction :-( I do not know why. If you can help with this,
+please let me know.
+
+* Known Bugs *
+
+- None, we write quality software here... :)
+
+* To-do *
+
+- writing documentation of the protocol
+
+- delete all FIXME from the sources

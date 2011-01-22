@@ -1,0 +1,309 @@
+* Sun 26 Sep 2010 Matthias Mucks
+- On 64Bit Machines, while reading contacts from a mobile,
+  'pbEntry->entry.caller_group' sometimes contains a large nubmer,
+  seems to be unsigned -1, which causes the SEGFAULT
+
+* Sun 15 Aug 2010 Daniele Forsi
+- Replace dprintf() with gn_log_xdebug()
+
+* Sun 25 Jul 2010 Daniele Forsi
+- Replace GtkText with GtkTextView in SMS windows to gain UTF-8 support
+
+* Tue 31 Mar 2009 Paweł Kot
+- Remove online documentation. It's outdated.
+
+* Thu 26 Feb 2009 Daniele Forsi
+- In xgnokii.desktop.in use Icon=phone (patch by Ariszló)
+
+* Thu 14 Feb 2008 Daniele Forsi
+- In Calendar window connect menu items for "Add reminder", "Add call", "Add
+  meeting", "Add birthday", "Delete note" to the same action as the toolbar
+  buttons and display a dialog for the actions that aren't yet implemented
+  ("Save to phone", "Send via SMS", "Import from file", "Export to file")
+
+* Wed 21 Nov 2007 Daniele Forsi
+- never let the user write a phonebook name longer than
+  GN_PHONEBOOK_NAME_MAX_LENGTH and allocate memory for string terminator too
+
+* Tue 20 Nov 2007 Daniele Forsi
+- fix moving phonebook entries from SM to ME or from ME to SM
+  closes https://savannah.nongnu.org/bugs/?21580
+
+* Mon 19 Nov 2007 Daniele Forsi
+- fix deleting phonebook entries
+  fixes original submission of https://savannah.nongnu.org/bugs/?20816
+
+* Sun 4 Nov 2007 Daniele Forsi
+- when importing contacts from file overwrite entries with same location
+  number; leave untouched other entries
+- fix optimization to read the phonebook when empty entries are present
+
+* Fri 26 Oct 2007 Daniele Forsi
+- when exporting the phonebook in raw format use the same function as gnokii
+  closes https://savannah.nongnu.org/bugs/?20815
+
+* Tue 19 Dec 2006 Daniele Forsi
+- clear the text box after deleting a note and update the list after adding a
+  note in the Calendar window
+
+* Sun 17 Dec 2006 Pawel Kot
+- Add support for blacklisting phones based on PM_XGNOKIIBREAKAGE
+  capability.
+
+* Tue 17 Jan 2006 Daniele Forsi
+- Changed CreateProgressDialog() to use the vbox provided by the dialog,
+  since creating a new vbox was no more possible (a GtkDialog is a subclass
+  of GtkBin and can only contain one widget, the warning said).
+
+* Sun 15 Jan 2006 Daniele Forsi
+- Changed again some messages to be consistent across the whole project.
+
+* Sat 07 Jan 2006 Daniele Forsi
+- Changed some messages to be consistent across the whole project.
+
+* Wed 10 Aug 2005 Jan Derfinak
+- First phase of moving to gtk2. -DGTK_ENABLE_BROKEN is needed to compile.
+  Based on patch from Bastien Nocera.
+
+* Thu 22 Mar 2001 Jan Derfinak 
+- Added 6210 preview to xlogos module.
+
+* Sat 03 Mar 2001 Jan Derfinak 
+- Pavel Machek's patch for finegrained indicators.
+
+* Fri 02 Feb 2001 Jan Derfinak 
+- New dialoges for 6210/7110 in contacts window.
+
+* Sat 13 Jan 2001 Jan Derfinak 
+- Patch from Pavel Machek <pavel@ucw.cz>. It provides better feedback to user,
+  puts GPL into copyright (it belongs there), and fixes docs.
+- Corrected non translatable labels/sentenses in xgnokii.c.
+  Hans Motshärg <hans.motsharg@eyp.ee>
+
+* Sun 19 Dec 2000 Jan Derfinak 
+- Functions for detecting phone's capabilites moved to common directory.
+
+* Sat Jul 15 13:18:12 CEST 2000 Jan Derfinak Jan Derfinak 
+- Patch from Christopher Kemp <ck231@cam.ac.uk> to enable data mode in
+  xgnokii.
+
+* Sun Jul 02 19:02:39 CEST 2000 Jan Derfinak 
+- Deleting calendar notes work.
+- Initialization timeout shorted from 15 secs to 10 secs.
+
+* Sun Jun 18 03:18:27 CEST 2000 Jan Derfinak
+- Saving SMS's to mailbox. Original idea from Petri Lahti <petri.lahti@iki.fi>
+- User configurable maximum length of names in contacts on SIM and phone.
+
+* Sat Jun 16 22:35:24 CEST 2000 Jan Derfinak 
+- New pixmap in calendar window from Marcel Koeppen <jojo@jojosoft.de>
+
+* Tue Jun 13 01:58:56 CEST 2000 Jan Derfinak 
+- Initialization timeout was extended from 5 secs to 15 secs.
+- Corrected algorithm for SMS reading. Now we can read all SMS on SIM card.
+- Changed date/time in delivery report from send date to delivery date.
+
+* Mon Jun 12 16:33:45 CEST 2000 Jan Derfinak 
+- xlogos integrated into xgnokii (Robert Vojta <penguin@clark.cz>)
+- Little progress in calendar window.
+- Cleaning code for compiling under Solaris 8 with new gcc.
+- Small changes and fixes.
+
+* Wed May 24 16:50:07 CEST 2000 Jan Derfinak 
+- Changed structure in help directory. (Polish help don't work now.)
+
+* Sun May 21 22:33:19 CEST 2000 Jan Derfinak 
+- New English online help. <(Marcin Wiacek
+  <Marcin-Wiacek@topnet.pl>)
+- Added notes viewer in Calendar window.
+- Added function which get and show notes in phone.
+
+* Wed May 17 17:51:07 CEST 2000 Jan Derfinak 
+- New install procedure for online documetation. (Brad Guillory
+  <round@baileylink.net>)
+- Small progress in Calendar window.
+
+* Tue May 16 11:24:08 CEST 2000 Jan Derfinak 
+- Okay, okay you are better in ice hockey.
+- Why did you removed slovak messages? You cannot translate them? :)
+- New skin for 5110 in keyboard window (Marcin Wiacek
+  <Marcin-Wiacek@topnet.pl>)
+- Corrected initialization of some static variables.
+- Progress in Calendar window design.
+
+* Mon May 15 19:15:04 CEST 2000 Pavel Janik ml. <Pavel.Janik@linux.cz>
+- removed references to malloc.h, it is deprecated.  We now use stdlib.h.
+
+* Sun May 14 21:17:06 CEST 2000 Pavel Janik ml. <Pavel.Janik@linux.cz>
+- Hey, we really won the World Championship in ice hockey again!
+- Fixed some minor language stuff.
+
+* Sat May 13 20:46:26 CEST 2000 Pavel Janik ml. <Pavel.Janik@linux.cz>
+- slovak debug messages removed :-)
+- Hey, we will beat you tomorrow in ice hockey!
+
+* Fri May 12 01:14:48 CEST 2000 Jan Derfinak 
+- Callers groups are readed only once.
+- Added info dialog when reading SMS centers.
+- New online help from Marcin Wiacek <Marcin-Wiacek@topnet.pl> in English
+  and Polish language. Language version depends on locale settings (LANG,
+  LC_MESSAGES or LC_ALL)
+
+* Mon May  1 21:16:35 CEST 2000 Jan Derfinak 
+- added new thread to xgnokii. This thread glue slow phone interface with
+  quick user interface (GUI).
+- new backgroung for xgnokii. "Business Cards" is replaced with "Calendar".
+  (Petr Vostrel <pisi@parscom.cz>)
+- Initial support for Calendar.
+- added online help for netmonitor from Marcin Wiacek
+  <Marcin-Wiacek@topnet.pl>.
+- added info dialog.
+- added support for showing outgoing call.
+- added support for translation menus into national languages.
+- corrected xkeyb map for 6150 (Jochen Schnapka <Jochen_Schnapka@genua.de>)
+- added detection for MNT phones (Andrew Kozin <stanson@chat.ru>)
+- more minor fixes.
+
+* Thu Mar 20 12:06:47 CET 2000 Jan Derfinak 
+xgnokii-20000320
+- corrected if clause for support Callers groups and Netmonitor.
+- removed option for memory type change, if phone support only SIM memory.
+- xkeyb integrated into xgnokii.
+
+* Thu Mar 16 15:45:39 CET 2000 Jan Derfinak 
+xgnokii-20000316
+- File CHANGES renamed to ChangeLog
+- Changed URL to Marcin Wi1cek nokia pages in xgnokii help.
+- xgnokii automatically recognizes phone and disable/enable supported
+  features (in 38xx serie is better to say "automagically")
+- Caller groups names are loaded from phone (I have not know that GetBitmap
+  do this.) User can change CGN and save it to phone.
+- Range checking for battery level added.
+Changes in SMS window:
+- Support for sending long SMS. User can choose, if he want only split SMS
+  in many SMS or if he uses Long SMS format.
+- Fixed bug in sorting in SMS's list.
+
+
+xgnokii-19991228
+- Speed Dial settings are possible view and edit. 
+Changes in SMS window:
+- minor bugfixes
+- Bussiness Card sending work. But we cannot read received bussiness card!
+
+
+xgnokii-19991216
+Changes in Contacts window:
+- Dial voice function let you to type arbitrary number.
+- Minor bugfixes in configuration refreshing stuff.
+Changes in SMS window:
+- SMS sending work! New SMS dialog look as if is possible to send long SMS
+  but this is only illusion. For now GSM->SendSMSMessage accept only first
+  160 characters.
+- New pixmaps.
+
+
+xgnokii-19991207
+- replaced 'getenv ("{HOME,HOMEDRIVE,HOMEPATH}")' with 'g_get_home_dir ()',
+  which is (I hope) more portable under MS Windows. 
+- added incoming call notification with stop watch.
+Changes in SMS window:
+- corrected GSList handling. (xgnogii have catch sigseg or end in
+  endless loop when SMS's number in phone had changed.)
+- added delete SMS functionality.
+- added sorting in SMS's list. 
+
+
+xgnokii-19991130
+- Added DTMF window.
+- Added execution of html viewer as help viewer. We need to write nice help
+  pages. :)
+Changes in Options window:
+- We can read name, number, format and validity period of SMS centers
+  from phone and also we can edit and save them to phone.
+Changes in SMS window:
+- Source completely rewriten. New design. Inbox and outbox in tree
+  hierarchy. If you have initialized contacts in xgnokii, xgnokii is trying
+  to resolve numbers to names. Messages are shown in viewer space.
+
+
+xgnokii-19991116
+- Added Net monitor. I thank Andreas Schmidt <mail@aschmidt.de> for idea
+  about graphical representation of Net monitor data. I thank also Norbert
+  Hüttisch (nobbi@nobbi.com) for his great web pages about Nokia Net Monitor.
+
+
+xgnokii-19991110
+- Added support for gettext() and messages catalogs.
+- Added Win32 support. (Acquadro Daniele <acquadro.daniele@logicasiel.it>)
+Changes in Contacts window:
+- Fixed bug when Save to phone haven't work in the case we just import 
+  contacts from file and haven't read they from phone before.
+- Fixed bug when empty contacts in phone have been not cleared when we have
+  import contacts from file and then we have save they into phone.
+
+
+xgnokii-19991010
+Changes in Options window:
+- Added User information edit window (needed for Business Card).
+- Added SMS settings windows. Xgnokii can only read SMS centers numbers from
+  phone. I can't read SMS set name, SMS format and Validity period from phone.
+  I can't also write any SMS setting in phone. And I don't know differencies
+  between SMS formats. :(
+- Added Groups names edit window. I can change group names in xgnokii. But
+  I can't read or write group names from/to phone because I don't have support
+  in gnokii. 
+- Added Alarm window. Xgnokii can read alarm from phone and set alarm in
+  phone. It can't unset alarm because lack support in gnokii.
+Changes in Contacts window:
+- Added Voice dial function.
+- Allowed sort order changing by clicking on titles.
+- Removed bug, when contacts in SIM card were not removed from phone, when
+  deleted in xgnokii.
+
+
+xgnokii-19990915
+Changes in Contacts window:
+- Fixed scrolling.
+- Fixed SIGSEG error due uninitialized variable.
+
+xgnokii-19990914
+- Fixed error in FB61_GetMemoryStatus. (FB61_GetMemoryStatus had ignore all
+  error status except GE_TIMEOUT. This break Contacts memory reading for
+  phone with only SIM memory.)
+  I think that Contacts memory reading is working also in 38xx series, but I
+  can't test it.
+Changes in Contacts window:
+- Export to file is working.
+- Import from file is working. Xgnokii uses extended format from NCDS (with
+  group entry) and is capable reading NCDS files.
+- More icons.
+
+
+xgnokii-19990906
+Changes in Contacts window:
+- Duplicate is working.
+- Delete accept multiple selection.
+- 'Change memory type' is working and accept multiple selection.
+- 'Select all' is working.
+- Find and 'Find next' is working.
+- Caller groups are working in xgnokii, but in GSM->WritePhonebookLocation
+  function is something wrong and it don't save caller group to phone.
+- New toolbar and xgnokii use some new pixmaps from Robert Vojta.
+Changes in SMS window:
+- We can get SMS's from phone. (Andri Saar <andri@marknet.ee>)
+
+
+xgnokii-19990824
+Changes in Contacts window:
+- Read/Save from/to phone is working.
+- New, Delete, Edit is working.
+- Export to file simply dump memory to standart output.
+- Import, Duplicate, 'Change memory type', 'Sellect all' is not working.
+
+
+xgnokii-19990816
+- My first release of xgnokii.
+- Simple options menu.
+- Application skeleton and some code cleanup.
+- Base for contacts window.

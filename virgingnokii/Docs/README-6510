@@ -1,0 +1,92 @@
+-- README-6510                                     --
+-- Notes, bugs and a todo list for the 6510 series --
+
+* Notes *
+
+First of all, tested with this driver so far are:
+ * 6510
+ * 8310
+ * 6310
+ * 6310i
+ * 6360
+ * 6610
+ * 6100
+ * 5100
+ * 3510
+ * 3510i
+ * 3595
+ * 6800
+ * 6810
+ * 6820
+ * 6820b
+ * 6610i
+ * 6230
+ * 6650
+ * 7210
+ * 7250
+ * 7250i
+ * 7600
+ * 6170
+ * 6020
+ * 6230i
+All Nokia Series40 phones should work with this driver.
+
+Code for the 6510 phones has been tested with DAU-9P and DLR-3P cables and
+IrDA connection. The following conection type values are recommended for the
+various connection media:
+
+-----------------------------------------
+| Media		| Connection type	|
+|---------------------------------------|
+| dau9p		| dau9p or serial	|
+| dlr3p		| dlr3p			|
+| IrDA		| irda			|
+| Bluetooth	| bluetooth		|
+| USB		| dku2libusb or phonet	|
+-----------------------------------------
+When you don't know what your cable is you can first try serial value.
+
+The current code is able to:
+ * identify the phone ;-)
+ * read/write phonebook entries
+ * read SMS messages of all kinds
+ * read SMS centers
+ * send basic text messages
+ * read/write calendar entries
+ * read the memory status
+ * read/write bitmaps (group, operator logos)
+ * read network info
+ * read RF/battery level
+ * read date/time
+ * read list of ringtones
+ * read/write profiles
+ * read WAP bookmarks/settings
+ * read/write/delete ToDo entries
+ * create/delete SMS folders
+ * save SMS messages to phone (may be dangerous)
+ * read/delete MMS (only Series 40 3rd Edition)
+
+Hint: For all these phones you can also use AT driver, as they all have a
+builtin hardware modem, but it usually supports less commands so it isn't
+recommended.
+
+* phonet Driver *
+
+Linux 2.6.28 and later versions provide a network kernel driver called
+"phonet" that conflicts with the dku2libusb driver provided by libgnokii and
+that can connect to the same phones.
+The port value is the device name as seen with "ifconfig", usually usbpn0.
+When using this driver you may encounter the following errors:
+* "Operation not permitted" - run as root:
+  setcap cap_sys_admin,cap_net_raw=+ep $(which gnokii)
+* "Address family not supported by protocol" - run "modprobe cdc_phonet" as
+  root and remove the cdc_phonet and phonet modules from the blacklist if
+  you put them there to use the dku2libusb driver
+* "No such device" - the phone isn't connected: choose "Nokia PC Suite" or
+  "Nokia mode" from phone's menu
+* "No route to host" - run as root "ifconfig usbpn0 up"
+
+* TODO *
+
+ * implement further functionality
+
