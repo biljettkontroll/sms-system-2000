@@ -1,0 +1,27 @@
+-- README-2110                                     --
+-- Notes, bugs and a todo list for the 2110 series --
+
+* Notes *
+
+Code for the 2110 phones has been tested with home-built cable. It
+should work well with any sort of cable.
+
+* Known Bugs *
+
+- Nokia protocol is not followed. We use hacks instead of collision
+  detection protocol nokia suggests.
+
+- Many. Look at code, needs cleanup, etc. Contact pavel at ucw dot cz
+  if you want to help.
+
+- When periodically fetching messages, it gets to state where protocol
+  breaks with "bad checksum".
+
+* To-do *
+
+- SMS sending.
+
+- Implement functionanlity such as reading internal A/D convertors and
+  ability to turn on netmon. [Not sure if all 2110s even have netmon.]
+
+

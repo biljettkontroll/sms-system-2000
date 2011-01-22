@@ -1,0 +1,21 @@
+A1018s
+======
+
+* Communicates with AT commands, with few possible extensions like
+pressing keys (AT+CKPD="X", x is 0..9, # * < > s==yes, e==no, c==clr).
+
+* Contains AVR RISC cpu, and its internals are pretty well known (see
+http://www.subdimension.com/community/scitech/ga628/a1018.htm), people
+are writing their own firmware with arkanoid, for example.
+
+* Its quite easy to flash firmware there.
+
+* Works with gnokii, use model AT as hardware type and add
+serial_baudrate = 9600 option to make it work.
+
+AT+CREG=2 should give cellid and operator notifications.
+AT+CPAS=1 gives "phone activity status" (what's that?)
+AT+CFUN=0 turns phone off
+AT+CIND=? gives some status, but I can't set indicators.
+AT+CMEE=2 gives string errors, might be usefull for debugging?
+AT+CCLK="02/04/26,22:20:10" works for setting time

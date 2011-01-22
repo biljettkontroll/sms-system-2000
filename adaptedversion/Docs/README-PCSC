@@ -1,0 +1,150 @@
+-- README-PCSC                                     --
+-- Notes, bugs and a todo list for the pcsc driver --
+
+* Features *
+
+This driver supports SIM and USIM cards inserted in smart card readers
+compatible with libpcsclite.
+
+By default this driver is compiled in libgnokii if libpcsclite is
+installed and pcsc include files are found. You can avoid this by passing
+--enable-libpcsclite=no to autogen.sh or to configure.
+
+You can download pcsc-lite from http://pcsclite.alioth.debian.org/ and
+a driver suitable to you reader could be available from
+http://www.musclecard.com/
+
+A typical configuration to use this driver is:
+  port = 0
+  model = pcsc
+  connection = pcsc
+If you have more than one reader, you might find it useful to specify
+the name of you reader in the port parameter (look at the debug output
+from pcscd or gnokii if you don't know the exact string to use).
+
+Implemented commands for gnokii are:
+--identify
+--deletephonebook
+--deletesms
+--entersecuritycode
+--getphonebook
+--getsms
+--getsmsc
+--getfile
+--getnetworkinfo
+--getsecuritycodestatus
+--showsmsfolderstatus
+
+This means that writing to the phonebook is not supported and writing
+short messages isn't supported either.
+
+The --identify command returns the following information:
+- IMEI
+  The string "Unknown" (this is a constant string)
+- Manufacturer
+  Operator name and country name converted using existing libgnokii
+  functions from MNC and MCC extracted from the IMSI (IMSI, MCC and MNC
+  are printed when debug = on); PIN code is needed to read the IMSI
+- Model
+  The string "SIM/USIM" (this is a constant string)
+- Product name
+  The string "pcsc" (this is a constant string)
+- Revision
+  a string similar to "Phase 2+ SIM" indicating the Phase Identification of
+  the SIM (possible values are 1, 2 and 2+)
+When debug = on this command also prints the ICCID.
+
+The --deletephonebook command can delete from any memory, if the SIM allows
+it.
+Current implementation completely overwrites deleted entries with 0xff.
+
+The --deletesms command can only delete from SM memory.
+Current implementation completely overwrites deleted entries with 0xff.
+
+The --entersecuritycode command currently supports only PIN.
+
+The --getphonebook command can read from SM, EN, FD, ON, SD, BD and LD.
+Use memory SD to read Service Dialing Numbers and BD to read Barred
+Dialing Numbers.
+Start number is 1, end number depends on SIM card but cannot exceed 255.
+Note that:
+- some SIM cards only have numbers in SM, so reading from the
+  other memories will fail
+- some phones do not write to the LD memory
+
+The --getsms command can only read from SM memory.
+Start number is 1, end number depends on SIM card but cannot exceed 255.
+
+The --getsmsc command can read the name of the set, if present.
+Start number is 1, end number depends on SIM card but cannot exceed 255.
+
+The --getfile command can read the MF, a DF or an EF, if the SIM allows it.
+A path name must start with 'B:' and the slash '/' or the backslash '\\'
+can be used as separators (in some shells the backslash must be doubled).
+All names are 4 digits hex numbers (case insensitive).
+Interesting files are the phonebook in raw format:
+  gnokii --getfile b:/7f10/6f3a
+and the SMSs in raw format:
+  gnokii --getfile b:/7f10/6f3c
+Do not try random numbers, read the GSM standard instead.
+
+The --getnetworkinfo command returns the following information about the
+last cell visited by the phone containing the SIM:
+- Network
+  Operator and country names converted using existing libgnokii functions
+  from MNC and MCC
+- Network code
+  MCC (3 digits) and MCC (2 or 3 digits)
+- LAC
+  Location Area Code as 4 hex digits
+- Cell id
+  Always 0 because it isn't stored together with the other information
+PIN code is needed to execute this command.
+
+The --showsmsfolderstatus command can only show SM memory.
+ 
+ 
+* Bugs *
+
+- GN_OP_GetMemoryStatus and GN_OP_GetSMSStatus always return total space
+  instead of used space.
+
+- Memory EN isn't actually supported.
+
+- GN_OP_GetSMS doesn't mark deleted SMS as such.
+
+
+* Troubleshooting *
+
+1) check that the pcsc-lite package is properly installed and configured
+Run pcscd in debug mode:
+ pcscd -f -d
+And see what it prints when you insert the card in the reader.
+
+2) check that libgnokii is compiled with libpcsclite support
+
+2a) if you are compiling libgnokiii from source, you need the binary for
+libpcsclite and its include files; if the ./configure script can find
+them its output will look like this:
+[..]
+checking for libpcsclite >= 1.4.2... yes
+checking LIBPCSCLITE_CFLAGS... -pthread -I/usr/include/PCSC
+checking LIBPCSCLITE_LIBS... -lpcsclite
+checking if libpcsclite includes are installed... yes
+[..]
+
+2b) if you are using a precompiled libgnokii binary check that it is
+linked with libpcsclite, eg.:
+$ ldd /usr/lib/libgnokii.so | grep libpcsclite
+        libpcsclite.so.1 => /usr/lib/libpcsclite.so.1 (0xb7ee6000)
+
+
+* ToDo *
+
+In random order:
+- Handle SMS
+- Give more information to the --identify command
+- Handle PIN
+- Implement --getnetworkstatus
+- Support writing
+

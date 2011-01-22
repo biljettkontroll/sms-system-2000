@@ -1,0 +1,399 @@
+$Id$
+
+Assembled by
+        Markus Plail <plail@web.de>
+	... and other members of gnokii mailing list <gnokii-users@nongnu.org>
+            and authors of some WWW pages.
+
+Heavily based on nk7110.txt.
+The data provided is for information purposes only. 
+Some of the frames might be hazardous to your phone. Be careful!!! 
+We do not take any responsibility or liability for damages, etc.
+
+NOTE: this information isn't (and can't be) complete.  If you know anything
+about features not listed here or you noticed a bug in this list, please
+notify us via e-mail at our mailing list <gnokii-users@nongnu.org>. Thank you.
+
+Document describing frames used in
+GSM Nokia 6510 and derivatives (?)
+Correct format is FBUS version 2/MBUS version 2/IrDA/Bluetooth
+(see nokia.txt for protocol details):
+
+
+0x01 COMMUNICATION
+    s Make call             { 0x01, numlen, number (unicode), type, 0x01, 0x05,
+                              0x00, 0x02, send number, 0x00, 0x00 }
+                            where type is: 0x05 - voice call
+			          send number: 0x01 - don't send
+    s Answer call           { 0x06, seqnr }
+    s Hang up               { 0x08, seqnr }
+
+    s Get call status       { 0x20 }
+    r Get call status       { 0x21, num of calls, 0xff, callinfo }
+                            where callinfo: { 0x64, blklen (0xd4), seqnr (1-8),
+			        channel (1-2), state, prevstate, ?, ?, ?, ?,
+				namelen, numlen,
+				name (49 unicode chars + 0x00, 0x00),
+				number (49 unicode chars + 0x00, 0x00) }
+				where state is:
+				   0x00: incoming call
+				   0x02: dialing
+				   0x03: ringing (out)
+				   0x04: ringing (in)
+				   0x05: established
+				   0x06: call held
+				   0x07: remote hangup
+
+    s ?                     { 0x1e }
+    r ?                     { 0x1f }
+    s ?                     { 0x22 }
+    r ?                     { 0x23, 0x00, 0x00 }
+    s ?                     { 0x24 }
+    r ?                     { 0x25, 0x00, 0x00 }
+    s ?                     { 0x26 }
+    r ?                     { 0x27, 0x00, 0x00 }
+    s ?                     { 0x28 }
+    r ?                     { 0x29, 0xff, 0x00 }
+    s ?                     { 0x2a }
+    r ?                     { 0x2b, 0xff, 0x00 }
+    s ?                     { 0x2c }
+    r ?                     { 0x2d, 0x55, 0x00 }
+    s ?                     { 0x50 }
+    r ?                     { 0x51, ?, ? }
+    s ?                     { 0x5b }
+    s ?                     { 0x5c }
+    r ?                     { 0x5d, ?, ?, ? }
+    s ?                     { 0x61 }
+    r ?                     { 0x62, 0x00, 0x00 }
+    s ?                     { 0x63? }
+    s ?                     { 0x65 }
+    r ?                     { 0x66, 0x00 }
+
+0x02: SMS HANDLING
+    s Send SMS              { 0x02, 0x00, 0x00, 0x00, 0x55, 0x55,
+                              0x01 (1 big block), 0x02 (submit), length (big block),
+			      type, reference, PID, DCS, 0x00, # blocks,
+			      blocks... }
+    r Send SMS              { 0x03, 0x00, 0x01, 0x0c, 0x08, 0x00, 0x00, 0xdb, 0x55, 0x55, 0x00 }
+
+    s Get SMSC              { 0x14, location, 0x00 }
+    r Get SMSC              { 0x15, err,  0x01, 0x0b, 0x28?, location, 0xf8?,
+                              format, 0x00, validity, #blocks, blocks ...}
+			    where: err - 0x00 ok, 0x02 - empty
+			           name block: { 0x81, blklen, namelen (bytes), 0x00, name (unicode) }
+				   number block: { 0x82, blklen, type, ?, number (bcd) }
+				   where type: 0x01 - default, 0x02 - number
+
+0x03: PHONEBOOK HANDLING
+
+    s Get memory status     { 0x03, 0x01, memory type, 0x55, 0x55, 0x55, 0x00}
+                            where: memory type - see 0x03/0x07
+    r Get memory status     { 0x04, 0x00, location, 0x00[7], 0x01, 0x10, 0x00, 0x00, 0x0c,
+                                    total_low, total_high, used_low, used_high, 0x01, 0x00, 0x00}
+
+    s Read memory           { 0x07, 0x01, 0x01, 0x00, 0x01, 0x02, memory type,
+			            0x00, 0x00, 0x00, 0x00, location_low, location_high, 0x00, 0x00};
+
+                            where MT: memory type
+                                     0x01: (256) Dialled numbers
+                                     0x02: (512) Missed calls
+                                     0x03: (768) Received calls
+                                     0x05: (500) telephone phonebook
+                                     0x06: (160) SIM phonebook
+                                     0x07: (10/0)
+                                     0x08: (1/0)
+                                     0x09: (4) voice mailbox
+                                     0x0e: (10) speed dials
+                                     0x10: (5) caller groups
+
+    r Read memory           { 0x08, 0x00, 0x01,
+                                    code, 0x00, 0x00, z, xH, xL, yH, yL, 0x00[7], no.of blocks, { block } * }
+
+                            where if code==0x0f && xH==0x34 - phonebook location not found
+                              y: location
+                              z: generic block size
+                              block: {id, 0, 0, blocksize, block no.,
+                                      {contents}, 0x00}
+                                id: 0x04 pointer to another memory location { 0xff?, yH, yL, xL,0x00[3] }
+                                    0x07 name {len, (unicode)},
+                                    0x08 email
+                                    0x09 postal
+                                    0x0a note {len, (unicode)}
+                                    0x0b number {type, 0x00[3], len, (unicode)}
+                                    0x0c ringtone {ringtone no., 0, 0}
+				    0x13 date for a called list (DC, RC, etc.)
+                                    0x1b caller group graphic {width, height, 0, 0 {bitmap}}
+                                    0x1c caller group graphic on? {(1: yes, 0: no), 0, 0}
+                                    0x1e caller group number {number, 0, 0}
+                                   type: 0x0a: General,
+                                         0x03: Mobile (office ?),
+                                         0x06: Work,
+                                         0x04: Fax,
+                                         0x02: Home (mobile ?)
+
+    s Set mem location      { 0x0b, 0x00, 0x01, 0x01, 0x00, 0x00, z,
+                                      0x02, memory type, yH, yL, 0x00[7],
+                                      no.of blocks, { block }[no.of blocks] }
+    r Set mem location      { 0x0c, 0?, 1?, code, 0?, 0?, z?, 0?, 0?,
+                                      yH, yL, xL }
+                            where code:
+                                    0x3d - wrong entry type
+
+0x08: SECURITY
+
+    s Get status            { 0x11, 0x00 }
+    r Get status            { 0x12, status, }
+                            where status:
+                            0x01: waiting for Security Code
+                            0x07:
+                            0x02: waiting for PIN
+                            0x03: waiting for PUK
+                            0x05: PIN ok, SIM ok
+                            0x06: No input status
+                            0x16: No SIM
+                            0x1A: SIM rejected!
+
+    s Enter PIN             { 0x07, code, code(ASCII), 0x00}
+                            where code:
+                            0x01: Security Code
+                            0x02: PIN
+    r Enter PIN             { return code, reason }
+                            where:
+                            return code: 0x08 = success
+                                         0x09 = failure
+                            reason: 0x06 = PIN wrong
+
+0x0a: NETSTATUS
+
+    s Get Info              { 0x00, 0x00 }
+    r Get Info              { 0x01, 0x00, # blocks, 
+                              0x00, length, 0x00, 0x02, status, length, operator name (unicode),
+                              0x09, length, LAC, LAC, 0x00, 0x00, CellID, CellID, NetworkCode (3 octets), ... }
+
+    s Get RF Level          { 0x0b, 0x00, 0x02, 0x00, 0x00, 0x00 }
+    r GET RF Level          { 0x0c, 0x00, 0x01, 0x04, 0x04, level, 0x5f }
+
+    s Get operator logo     { 0x23, 0x00, 0x00, 0x55, 0x55, 0x55 }
+    r Get operator logo     { 0x24, 0x00, 0x01, 0x00, 0x00, 0x00, 
+                              0x02, 0x0c, 0x08, netcode (3 octets), 0x02, 0x00, 0x00, 
+			      0x1a, size, width, height, logo size (2 octets), logo size (2 octets), logo }
+
+0x0c: KEYPRESS
+
+    s ?                     { 0x01, ... }
+    r ?                     { 0x02, ... }
+
+    s ?                     { 0x03, ... }
+    r ?                     { 0x04, ... }
+
+    s ?                     { 0x0e, ... }
+    r ?                     { 0x0f, ... }
+
+    s ?                     { 0x11, 0x00, number of blocks, block... }
+                            where block is: { action, 0x00, ?, repeat count }
+			       where: action: 0x00 - press, 0x01 - release
+    r ?                     { 0x12, err, 0x00 }
+
+0x10: SUBSCRIBE
+
+    s Subscribe Channnel     { 0x10, # channels, message types... }
+
+0x13 CALENDAR
+
+    s Add meeting note      { 0x01, body like in subtype 0x1a...}
+    r Add meeting note      { 0x02, location (2 bytes), status (2 bytes)}
+
+    s Add call note         { 0x03, body like in subtype 0x1a...}
+    r Add call note         { 0x04, location (2 bytes), status (2 bytes)}
+
+    s Add birthday note     { 0x05, body like in subtype 0x1a...}
+    r Add birthday note     { 0x06, location (2 bytes), status (2 bytes)}
+
+    s Add reminder note     { 0x07, body like in subtype 0x1a...}
+    r Add reminder note     { 0x08, location (2 bytes), status (2 bytes)}
+
+    s Delete calendar note  { 0x0b, location (2 bytes) }
+    r Delete calendar note  { 0x0c, location (2 bytes), ?, ?, ?, ? }
+
+    s Get calendar note     { 0x19, location (2 bytes) }
+    r Calendar note recvd   { 0x1a, location (2 bytes), entry type, 0x00, year (2 bytes), Month, Day, block}
+                            where: entry type - 0x01 - Meeting, 0x02 - Call, 0x04 - Birthday, 0x08 - Reminder
+                                   block: for Meeting:{hour,minute,alarm (two bytes),recurrence (two bytes),len,0x00,string(unicode)}
+                                          where alarm=Number of minutes before the time of the meeting
+                                                  that the alarm should be triggered:
+                                                  For meetings with "No alarm"=0xFFFF (-1).
+                                                  For "On time"=0x0000
+                                                  half an hour=0x001E, and so on.
+                                                Recurrence=in hours, between future occurrences of this meeting.
+                                                  If there is no repeat, this value is 0x0000. The special value 0xffff 
+                                                  means 1 Year!
+                                          for Call:{Hour,Minute,Alarm (as above),Recurrence (as above),namelen,numberlen,
+                                                    name(unicode),number(unicode)}
+                                          for Reminder:{Recurrence (as above),len,0x00,string(unicode)}
+                                          for Birthday:{byte1,byte2,alarm(4 bytes),yearofbirth,alarmtype,len,string(unicode)}
+                                                    byte1 and byte2 may vary (???). Usually are 0x00 both (but not always)
+                                                    In Birthday, the Year in the common part, usually contains a strange year.
+                                                    So, don't consider it as Year of note, neither year of BirthDay (for Year of
+                                                    Birthday use the value described below).
+                                          where alarm=32-bit integer that is the number of seconds between the desired
+                                                  alarm time and 11:59:58pm on the birthday.For "No Alarm", the value is
+                                                  0x0000FFFF (65535).
+                                                YearOfBirth=used instead of the one in the common part of the entry (see above)
+                                                  but only when reading birthday entries. For storing entries, this field does
+                                                  not exist.
+                                                AlarmType: 0x00 - Tone, 0x01 - Silent
+
+    s Get first free pos    { 0x0031 }
+    r Get first free pos    { 0x0032, location (2bytes) }
+
+    s Get notes info        { 0x003a, 0xFF, 0xFE}
+    r Get notes info        { 0x003b, how many notes used (2 bytes), n, more, { two bytes with location for each note} *}
+                            where: n - number of entries in this message
+			           more - 0x00: more entries, 0x07: last msg
+
+0x14: FOLDER/PICTURE SMS HANDLING
+
+    s Get SMS Status        { 0x08, 0x00, 0x01 }
+    r Get SMS Status        { 0x09, 0x00, #blocks, 
+                              type, length, blocknumber,
+                              a (2 octets), b (2 octets), c (2 octets), 0x00, 0x55 ,
+                              type, length, blocknumber, 
+                              d (2 octets), e (2 octets), f (2 octets), 0x01, 0x55 }
+
+                              where:
+                              a - max. number of messages in phone memory
+                              b - Number of used messages in phone memory. These
+                                are messages manually moved from the other folders.
+                                Picture messages are saved here.
+                              c - Number of unread messages in phone memory. Probably
+                                only smart messages.
+                              d - max. number of messages on SIM
+                              e - Number of used messages in SIM memory. These are
+                                either received messages or saved into Outbox/Inbox.
+                                Note that you *can't* save message into this memory
+                                using 'Move' option. Picture messages are not here.
+                              f - Number of unread messages in SIM memory
+
+
+
+    s Get SMS from folder   { 0x02, memory, folderID, location, location, 0x01, 0x00}
+                            where: 
+			    memory - 0x01 for SIM, 0x02 for phone (SIM only for IN/OUTBOX
+                            folderID - see 0x14/0x017B
+    r Get SMS from folder   { 0x03, 0x00, 0x01, memory, folderID, locationH, locationL, 0x55, 0x55, 0x55,  
+                              0x01 (on big block), type, length of big block, 
+			      [date/time1], [date/time2], # blocks,
+			      type, length, data...
+			      ... }
+
+    s Delete SMS            { 0x04, memory, folderID, location, location, 0x0F, 0x55 }
+    r Delete SMS            { 0x05 }
+
+    s Get folder status     { 0x0c, memory, folderID, 0x0F, 0x55, 0x55, 0x55, 0x55}
+                            where: folderID - see 0x14/0x017B
+    r Get folder status     { 0x0d, 0x00, length, number of entries (2 bytes), 
+			    entry1number (2 bytes), entry2number(2 bytes), ..., 0x55[]}
+
+    s Get message info      { 0x0e, memory, folderID, location, location, 0x55, 0x55 }
+    r Get message info      { 0x0f, 0x00, 0x01, 0x00, 0x50, memory, type, 0x00, location, FolderID, status
+
+                            where: type = 0x00 - MT
+                                          0x01 - delivery report
+                                          0x02 - MO
+                                          0x80 - picture message
+                            where: status=0x01 - received/read
+					  0x03 - received/unread
+					  0x05 - stored/sent
+					  0x07 - stored/not sent
+
+    s Get folder names      { 0x12, 0x00, 0x00}
+    r Get folder names      { 0x13, 0x00, number of blocks, blocks... }
+			    where block is: { 0x01, blocklen, folderID, length, 0x00, 0x00, padding... }
+                               where: folderID = 0x02 - Inbox
+                                                 0x03 - Outbox
+                                                 0x04 - Archive
+                                            0x05 - Templates
+                                            0x06 - first "My folders"
+                                            0x07 - second "My folders"
+                                            0x08 - third -"-
+                                            and so on
+				      blocklen = length of the block including
+				                 the 0x01 and blocklen itself
+						 e.g.: 0x28 - 6510
+						       0x58 - 6610
+
+
+0x17: BATTERY
+    
+    s Get battery level     { 0x0a, 0x02, 0x00 }
+    r Get battery level     { 0x0b, 0x01, 0x01, 0x16, level, 0x07, 0x05 }
+                            where: level: 1-7 (as in phone display)
+
+0x19: CLOCK
+
+    s Get date              { 0x0a, 0x00, 0x00 }
+    r Get date              { 0x0b, 0x00, 0x02 (blocks), 
+                              0x01 (type), 0x0c (length), 0x01, 0x03, year (2 octets), month, day, hour, minute, second, 0x00, 
+                              0x04, 0x04, 0x01, 0x00 }
+
+0x1b: IDENTITY
+
+    s Get IMEI              { 0x00, 0x41 }
+    r Get IMEI              { 0x01, 0x00, 0x01, 0x41, 0x14, 0x00, 0x10, {IMEI(ASCII)}, 0x00 }
+    s get HW&SW version     { 0x07, 0x00, 0x01 }
+    r get HW&SW version     { 0x08, 0x00, 0x01, 0x58, 0x29, 0x00, 0x22, "V " "firmware\n" "firmware date\n"
+                              "model\n" "(c) NMP.", 0x0a, 0x43, 0x00, 0x00, 0x00 }
+
+0x1f: RINGTONE
+
+    s Get Ringtones         { 0x07, 0x00, 0x00, 0xFE, 0x00, 0x7D }
+    r Get Ringtones         { 0x08, numberHI, numberLO, blocks... }
+			    where block is: { blenHI, blenLO, idHI, idLO,
+			                      0x01, type, 0x00,
+					      name length (chars),
+					      name (unicode)...  }
+			    where type: 0x01 - built-in, 0x02 - user defined
+
+    s Set raw ringtone      { 0x0e, locationHI, locationLO, 0xfe, name length (chars), name (unicode),
+                              datalenHI, datalenLO, data (MIDI file or raw ringtone), 0x00, 0x00 }
+			    where location = 0x7fff means first unused entry
+    r Set raw ringtone      { 0x0f, err, 0x00 } where err = 0 means ok
+
+    s Delete ringtone       { 0x10, locationHI, locationLO }
+			    where location = 0x7ffe means all user defined
+    r Delete ringtone       { 0x11, err, 0x00 }
+                            where err: 0x00 - ok, 0x03 - inv loc, 0x0a - empty
+
+    s Get raw ringtone      { 0x12, numberHI, numberLO }
+    r Get raw ringtone      { 0x13, numberHI, numberLO, ?, name length (chars), name (unicode),
+                              datalenHI, datalenLO, data (MIDI file or raw ringtone), 0x00, 0x00 }
+			      6310 didn't send the last two byte
+    r Get raw ringtone err  { 0x14, ? }
+
+0x39: PROFILES
+
+    s Get Profile           { 0x01, 0x01, 0x0c, 0x01,
+                              0x04 (length), profile #, 'feature', 0x01 }
+    r Get Profile           { 0x02, 0x00, 0x0c, 0x02, 
+                              0x09 (length), type, 0x01, 0x02, 0x00, 0x00, 0x01, value, 0x02 ... }
+
+    s Set Profile           { 0x03, 0x01, # blocks, 0x03, 
+                              length, type, profile #, value, 0x00, 0x00, 0x01, value, 0x03 ... }
+    r Set Profile           { 0x04, 0x01, # blocks,
+                              length, 0xXX, type, 0xXX, value
+                              where value: 0x00 = success
+
+0x7a: STARTUP
+    
+    s Get startup logo      { 0x02, 0x0f }
+    r Get startup logo      { 0x03, 0x0f, 0x00[4], # blocks,
+                              0xc0, 0x02, height (2 octets),
+                              0xc0, 0x03, width (2 octets),
+                              0xc0, 0x04, size (2 octets),
+			      picture }
+
+    s Get startup greeting  { 0x02, 0x01, 0x00 }
+    r Get startup greeting  { 0x03, 0x01, 0x00, greeting (unicode), 0x00 }
+
+    s Get anykey answer     { 0x02, 0x05, 0x00 }
+    r Get anykey answer     { 0x03, 0x05, 0x00, 0x00/0x01 }

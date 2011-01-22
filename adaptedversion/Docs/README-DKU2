@@ -1,0 +1,25 @@
+*** README-DKU2                                               ***
+*** Notes, Install, bugs etc for the DKU2 Linux kernel module ***
+
+
+* Notes *
+
+The recommended way to use DKU2 cable is to use included in gnokii userspace
+libusb driver. Ensure that you have libusb on your system (if you compile
+gnokii you would need development libusb packages) and use
+connection=dku2libusb setting in your config file. As port use number of
+compatible USB end-point (starting with 1). This setting is useful just to
+distinct more than one DKU2 phone connected to PC.
+You may want to install Docs/sample/45-nokiadku2.rules to set device
+permissions for non-root users using udev.
+
+Sources for the nokia_dku2 Linux kernel module have been removed since gnokii
+0.6.28.
+
+
+* Disclaimer *
+
+No warranty, you are on your own. If you have questions or remarks,
+please let me know on my email address mentioned below.
+
+Author: Chris Kemp (chris at madpanda dot org)

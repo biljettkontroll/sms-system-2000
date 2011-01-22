@@ -1,0 +1,8 @@
+.libs
+*.o
+*.lo
+*.la
+gnokiid
+Makefile
+Makefile.in
+.deps
