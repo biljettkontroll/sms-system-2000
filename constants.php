@@ -1,5 +1,5 @@
 <?php
-$YOU_HAVE_JOINED = "Du är nu medlem. För att lämna listan, skicka QUIT. Skicka varningar till: 0727301059. Skickar, men tar ej emot gör: 0727301124 och 0727301048.";
+$YOU_HAVE_JOINED = "Du är nu medlem. Skicka HJÄLP för hjälp. För att lämna listan, skicka PAUS. Skicka till: 0727301059. Skickar, men tar ej emot gör: 0727301124 och 0727301048.";
 $YOU_HAVE_QUIT = "Du är nu borttagen ur smslistan.";
 $INCORRECT_SYNTAX = "Felaktig syntax. Vänligen kolla att du skrev rätt.";
 $NO_SUCH_CASE = "Felaktigt id. Skrev du rätt?";
@@ -18,6 +18,8 @@ $DEBUG_OUTPUT = true;
 $USE_MESSAGE_CONFIRMATION = true;
 
 
+
+
 $MESSAGE_CONFIRMATION = 'Tack för ditt tips! Vi ser nu över det och beslutar om det ska skickas ut.';
 
 //Admin errors
@@ -33,8 +35,9 @@ $MESSAGE_TO_LONG_TO_TWITTER = "Meddelandet för långt för att twittras.";
 
   
 //User errors
-$UNSUBSCRIBE_TOO_MANY_ARGUMENTS = "Smssystemet: För många ord. Prenumerationsavslutning tar inga parametrar.";
+$UNSUBSCRIBE_TOO_MANY_ARGUMENTS = "Smssystemet: För många ord. Prenumerationspaus tar inga parametrar.";
 $RESUBSCRIBE_TOO_MANY_ARGUMENTS = "Smssystemet: För många ord. Prenumerationsstart tar inga parametrar.";
+$HELP_TOO_MANY_ARGUMENTS = "Smssystemet: För många ord. Hjälp tar inga parametrar.";
 $JOIN_TOO_MANY_ARGUMENTS = "Smssystemet: För många ord. Join tar inga parametrar.";
 $EMPTY_SMS_FROM_MEMBER = "Smssystemet: Det där SMS:et såg tomt ut för oss. Har du en konstig mobil?";
 $NOT_AN_ID = "Det där ser inte ut som ett meddelande-ID.";
@@ -58,6 +61,8 @@ $CHECK_FOR_MESSAGE_INTERVAL_IN_SECONDS = 10;
 $PREVIOUS_CASE_ID = '..';
 $COMMAND_SPLIT_TOKEN = '|';
 
+$USER_HELP_TEXT = 'Meddelanden kollas och skickas ut. Kommandon: paus - pausa medlemskap. start - starta pausat medlemskap.';
+
 $ADMIN_COMMANDS['SEND_DEFAULT_METHOD'] = 's';
 $ADMIN_COMMANDS['SEND_OUT_CASE'] = 'sendonly';
 $ADMIN_COMMANDS['SEND_OUT_TWITTER_CASE'] = 'sendtwitter';
@@ -68,10 +73,12 @@ $ADMIN_COMMANDS['STATISTICS'] = 'stat';
 $ADMIN_COMMANDS['BAN_NUMBER'] = 'ban';
 $ADMIN_COMMANDS['SET_CASE_TYPE'] = 'set';
 $ADMIN_COMMANDS['CREATE_CASE'] = 'cr';
- 
+$ADMIN_COMMANDS['SEND_PRIVATE'] = 'priv';
+  
 $USER_COMMANDS['RESUBSCRIBE'] = 'start';
-$USER_COMMANDS['UNSUBSCRIBE'] = 'stopp';
+$USER_COMMANDS['UNSUBSCRIBE'] = 'paus';
 $USER_COMMANDS['JOIN'] = 'joincommandissecret';
+$USER_COMMANDS['HELP'] = 'hjälp';
 
 
 ?>

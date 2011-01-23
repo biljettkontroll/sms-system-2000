@@ -100,7 +100,34 @@ class Database {
         // $Database::associateCaseAndInbox($case->getId(), $message->getId());
         Database::sendSingleMessage($message->getFromNumber(), $GLOBALS['INCORRECT_SYNTAX'] . " " . $description);
     }
-
+ 
+	
+	public static function getMessageById($id){
+		
+		$receiverPrefix = Database::$receiverPrefix;
+		
+		//Max one row in return
+        $id = pg_escape_string($caseId);
+        if (!is_numeric($id)) {
+            throw new Exception($GLOBALS['INCORRECT_ID_FORMAT']);
+        }
+        $result = Database::query(
+          "SELECT inbox.id as id, inbox.number, inbox.smsdate, inbox.insertdate, inbox.text,
+			inbox.phone, inbox.processed
+			FROM {$receiverPrefix}_inbox as inbox	
+			where id = $id"			
+			);
+			
+		while ($line = pg_fetch_array($result)) {
+	//    $text = preg_replace('/[^\w\d_ -]/si', '', $line['text']);
+			
+        if ($line = pg_fetch_array($result)) {
+			return new Sms($line['id'], $line['text'], $line['number'], false);	
+        } else {
+            return null;
+        }	
+	}
+	
     /**
      * Hämtar alla nya obehandlade meddelanden från databasen.
      * @return <Message[]>
@@ -119,10 +146,6 @@ class Database {
 			LEFT JOIN admins ON ( inbox.number = admins.number )
 			LEFT JOIN members ON ( inbox.number = members.number )
 			where completelyprocessed is null and (banned is null or banned = 0)");
-
-		
-		
-			
 
         $messages = array();
         while ($line = pg_fetch_array($result)) {
@@ -408,6 +431,9 @@ class Database {
         return $sms;
     }
 
+	
+	
+	
     public static function canSendToMembers($caseId){
              //Case id is not a number? Fuck off.
         $caseId = pg_escape_string($caseId);
@@ -711,6 +737,29 @@ class Database {
  
     }
 	
+	
+	public static function canSendPrivate($caseId){
+             //Case id is not a number? Fuck off.
+        $caseId = pg_escape_string($caseId);
+        if(!is_numeric($caseId)){
+                 throw new Exception($GLOBALS['INCORRECT_ID_FORMAT']);
+        }
+
+
+		 //No such case? return -1
+		 $result = Database::query("select * from \"case\" where id = $caseId");
+		 if(pg_num_rows($result)==0){
+				 throw new Exception($GLOBALS['NO_SUCH_CASE']);
+		  }
+		 $row = pg_fetch_array($result);
+		 if(strlen($row['text'])>$GLOBALS['MAX_SEND_OUT_LENGTH']){
+			throw new Exception($GLOBALS['MESSAGE_TO_LONG']);
+		 }
+
+
+    }
+
+
 	
     /** 
      * Skickar ett enda SMS till en mobil. Använder den alternerande mobilen till detta.

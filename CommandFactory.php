@@ -32,7 +32,23 @@ class CommandFactory {
 					
 					$command = new SendOutCommand();
 					$command->setCaseId($parts[1]);
+				}else if ($parts[0] == $GLOBALS['ADMIN_COMMANDS']['SEND_PRIVATE']) {
 					
+					if (count($parts) < 3) {
+						throw new Exception($GLOBALS['ADMIN_COMMANDS']['REJECT_CASE'] . $GLOBALS['INCORRECT_PARAMETER_COUNT']);
+					}
+					//Combine all remaining to one string
+					$parts = explode(' ', $text, 3);
+
+					
+					if($parts[1] != $GLOBALS['PREVIOUS_CASE_ID'] && !is_numeric($parts[1])){
+						throw new Exception($GLOBALS['NOT_AN_ID']);
+					}
+				 	
+					$command = new SendPrivate();
+					$command->setCaseId($parts[1]);
+					$command->setNewText($parts[2]);
+				
 				}else if ($parts[0] == $GLOBALS['ADMIN_COMMANDS']['SEND_DEFAULT_METHOD']) {
 					if (count($parts) != 2) {
 						throw new Exception($GLOBALS['ADMIN_COMMANDS']['SEND_DEFAULT_METHOD'] . $GLOBALS['INCORRECT_PARAMETER_COUNT']);
@@ -164,7 +180,14 @@ class CommandFactory {
 
                 $command = new UnsubscribeCommand();
                 $command->setFromNumber($fromNumber);
-				
+			} else if ($parts[0] == $GLOBALS['USER_COMMANDS']['HELP']) {
+                if (count($parts) != 1) {
+					throw new Exception($GLOBALS['HELP_TOO_MANY_ARGUMENTS']);
+                }
+
+                $command = new HelpCommand();
+                $command->setFromNumber($fromNumber);
+			
 			} else if ($parts[0] == $GLOBALS['USER_COMMANDS']['RESUBSCRIBE']) {
                 if (count($parts) != 1) {
 					throw new Exception($GLOBALS['RESUBSCRIBE_TOO_MANY_ARGUMENTS']);					

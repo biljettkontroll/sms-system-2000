@@ -3,7 +3,7 @@ class ControlCase{
     private $id;
     private $text;
     private $status;
-    private $caseTypeName;
+    private $caseTypeName; 
     private $firstInboxId;
  
 

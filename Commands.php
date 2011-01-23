@@ -155,6 +155,66 @@ class SendOutCommand extends iCommand {
 
 }
 
+
+/**
+ * Sends a private message to user.
+ */
+class SendPrivate extends iCommand {
+
+    
+        private $caseId;
+    private $newText;
+
+    public function getCaseId() {
+        return $this->caseId;
+    }
+ 
+    public function setCaseId($caseId) {
+        $this->caseId = $caseId;
+    }
+
+    public function getNewText() {
+        return $this->newText;
+    }
+
+    public function setNewText($newText) {
+        $this->newText = $newText;
+    }
+
+    public function useLastCaseId($lastId) {
+        if ($this->caseId == $GLOBALS['PREVIOUS_CASE_ID']) {
+            $this->caseId = $lastId;
+        }
+    }
+
+    public function performCommand() {
+        $case = Database::getCaseById($this->caseId);
+		$message = Database::getMessageById($case->firstInboxId);
+		
+        if ($case == null) {
+            throw new Exception($GLOBALS['NO_SUCH_CASE']);
+        }
+
+        if ($case->getStatus() == "WAITING") {
+            Database::changeCaseState($case->getId(), "PRIVATE");            
+       	    //Send sms to all members
+			
+            Database::sendSingleMessage($message->fromNumber, $this->newText);    
+        }
+    }
+
+  public function canPerformCommand(){
+        try{
+                Database::canSendPrivate($this->caseId);
+        }catch(Exception $e){
+                throw $e;
+        }
+
+    }
+
+
+}
+
 /**
  * Command to send out a case to all members and twitters.
  */
@@ -538,6 +598,38 @@ class UnsubscribeCommand extends iCommand {
 
 
 }
+
+
+class HelpCommand extends iCommand {
+
+    
+    private $fromNumber;
+
+    public function getFromNumber() {
+        return $this->fromNumber;
+    }
+
+    public function setFromNumber($fromNumber) {
+        $this->fromNumber = $fromNumber;
+    }
+
+    public function useLastCaseId($lastId) {
+        
+    }
+
+    public function performCommand() {
+        Database::sendSingleMessage($this->fromNumber, $GLOBALS['USER_HELP_TEXT']);
+    }
+
+	
+  public function canPerformCommand(){
+        try{
+        }catch(Exception $e){
+                throw $e;
+        }
+  }
+}
+
 
 
 
