@@ -1,1 +1,0 @@
-echo "Żółta żaba żarła żur" | $GNOKII --sendsms 0800123456

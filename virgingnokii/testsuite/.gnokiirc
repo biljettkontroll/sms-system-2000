@@ -1,5 +1,0 @@
-[global]
-port = /dev/null
-model = fake
-initlength = default
-connection = serial

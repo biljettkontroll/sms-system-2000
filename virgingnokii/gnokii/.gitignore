@@ -1,8 +1,0 @@
-.libs
-*.o
-*.lo
-*.la
-gnokii
-Makefile
-Makefile.in
-.deps
